@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balatro Roulette - All In Chip</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --table-color: #2e5c3e;
+            --table-border: #3d2817;
+            --accent-gold: #ffd700;
+            --accent-red: #e74c3c;
+            --accent-black: #2c3e50;
+            --text-light: #ecf0f1;
+            --chat-bg: #0f0f0f;
+            --bubble-user: #3498db;
+            --bubble-dealer: #e74c3c;
+            --bubble-jimbo: #9b59b6;
+        }
+
+        body.skin-vip {
+            --bg-color: #0d0d0d;
+            --table-color: #1a1a2e;
+            --accent-gold: #00d2ff;
+            --chat-bg: #151515;
+        }
+
+        * { box-sizing: border-box; user-select: none; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-light);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            transition: background 0.5s;
+        }
+
+        /* --- Header --- */
+        header {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 5px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--accent-gold);
+            z-index: 10;
+            height: 70px;
+        }
+        .header-left { display: flex; flex-direction: column; }
+        .brand { 
+            font-family: 'VT323', monospace; 
+            font-size: 1.8rem; 
+            font-weight: bold; 
+            color: var(--accent-gold); 
+            text-shadow: 2px 2px 0px #e74c3c;
+            line-height: 1;
+        }
+        .mode-status { font-size: 0.8rem; color: #aaa; margin-top: 2px; }
+        .mode-status span { color: var(--accent-gold); font-weight: bold; }
+
+        .header-controls { display: flex; gap: 15px; align-items: center; }
+        
+        .round-progress-container {
+            display: none;
+            flex-direction: column;
+            width: 200px;
+            margin-right: 15px;
+        }
+        .round-text { font-size: 0.8rem; display: flex; justify-content: space-between; font-family: 'VT323'; }
+        .progress-bar-bg {
+            width: 100%; height: 10px; background: #333; border-radius: 5px; overflow: hidden; border: 1px solid #555; margin-top: 3px;
+        }
+        .progress-bar-fill {
+            height: 100%; background: linear-gradient(90deg, #e74c3c, #f1c40f); width: 0%; transition: width 0.5s ease-out;
+        }
+
+        .btn-start-run {
+            background: linear-gradient(45deg, #2ecc71, #27ae60); border: none; padding: 5px 15px; border-radius: 5px;
+            font-weight: bold; color: #fff; cursor: pointer; font-family: 'VT323', monospace; font-size: 1.2rem;
+            box-shadow: 0 4px 0 #1e8449; transition: transform 0.1s;
+        }
+        .btn-start-run:active { transform: translateY(4px); box-shadow: none; }
+
+        .btn-shop, .btn-deck {
+            background: #e74c3c; border: none; padding: 5px 15px; border-radius: 5px;
+            font-weight: bold; color: #fff; cursor: pointer; font-family: 'VT323', monospace; font-size: 1.2rem;
+            box-shadow: 2px 2px 0px #000;
+        }
+        .btn-shop { background: var(--accent-gold); color: #000; }
+        .btn-deck { background: #9b59b6; }
+
+        .balance-box {
+            background: #000; padding: 2px 10px; border: 2px solid var(--accent-gold);
+            color: var(--accent-gold); font-family: 'VT323', monospace; font-size: 1.5rem;
+        }
+
+        /* --- Main Layout --- */
+        main { display: flex; flex: 1; overflow: hidden; position: relative; }
+        
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background: radial-gradient(circle, #2e4053 0%, #000 100%);
+            padding: 20px;
+        }
+
+        .jimbo-container {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 100px;
+            height: 100px;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(124, 56, 168, 0.5));
+        }
+
+        .dealer-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid var(--accent-gold);
+            overflow: hidden;
+            background: #000;
+        }
+        .dealer-img { width: 100%; height: 100%; object-fit: cover; }
+
+        canvas#rouletteCanvas {
+            border-radius: 50%; box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            border: 10px solid #3d2817;
+            z-index: 5;
+        }
+
+        .result-display {
+            margin-top: 20px;
+            text-align: center;
+            background: rgba(0,0,0,0.6);
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid var(--accent-gold);
+        }
+        .result-number {
+            font-family: 'VT323', monospace; font-size: 4rem; line-height: 1;
+            color: #fff; text-shadow: 0 0 10px #fff;
+        }
+        .effect-indicator {
+            font-size: 0.8rem; color: #e67e22; font-weight: bold; text-transform: uppercase;
+            height: 15px; opacity: 0; transition: opacity 0.5s;
+        }
+
+        .right-panel {
+            flex: 1.5;
+            background-color: var(--table-color);
+            border-left: 10px solid var(--table-border);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjMmU1YzNlIi8+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMzZDQ4MzAiLz4KPC9zdmc+');
+        }
+
+        .active-cards-section {
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 8px;
+            min-height: 120px;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            border: 1px dashed #555;
+        }
+        .balatro-card {
+            min-width: 80px;
+            height: 110px;
+            background: #fff;
+            border-radius: 5px;
+            border: 2px solid #333;
+            color: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            position: relative;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            transition: transform 0.2s;
+        }
+        .balatro-card:hover { transform: translateY(-5px); }
+        .balatro-card.red { background: #ffadad; border-color: #d90429; color: #d90429; }
+        .balatro-card.blue { background: #a0c4ff; border-color: #0077b6; color: #0077b6; }
+        .balatro-card.orange { background: #f0e68c; border-color: #daa520; color: #555; }
+        .balatro-card.purple { background: #e0b0ff; border-color: #9b59b6; color: #555; }
+        .balatro-card.mult { font-size: 1.8rem; font-weight: bold; }
+        .card-desc { font-size: 0.6rem; text-align: center; padding: 2px; margin-top: 5px; }
+        .remove-card {
+            position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white;
+            border-radius: 50%; width: 20px; height: 20px; display: flex; justify-content: center; align-items: center;
+            font-size: 12px; cursor: pointer; z-index: 10;
+        }
+
+        .betting-board {
+            display: grid; grid-template-columns: 30px repeat(3, 1fr); gap: 2px;
+            background: #fff; padding: 2px; border-radius: 4px;
+        }
+        .bet-cell {
+            background: var(--table-color); color: #fff; border: 1px solid rgba(255,255,255,0.2);
+            display: flex; justify-content: center; align-items: center; height: 45px;
+            font-weight: bold; cursor: pointer; position: relative;
+        }
+        .bet-cell.red { background-color: var(--accent-red); }
+        .bet-cell.black { background-color: var(--accent-black); }
+        .bet-cell.green { background-color: #27ae60; grid-column: 1 / -1; }
+        
+        .outside-bets { display: flex; gap: 5px; margin-top: 5px; }
+        .bet-btn { flex: 1; padding: 10px; border: 2px solid rgba(255,255,255,0.3); cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; border-radius: 4px; background: #333; }
+        .btn-red { background-color: var(--accent-red); }
+        .btn-black { background-color: var(--accent-black); }
+
+        .chip-marker {
+            position: absolute; width: 20px; height: 20px; background: var(--accent-gold);
+            color: #000; border-radius: 50%; font-size: 9px; display: flex;
+            justify-content: center; align-items: center; border: 1px dashed #fff;
+            pointer-events: none; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .controls-area { margin-top: auto; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; }
+        .chip-selector { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+        .chip {
+            width: 45px; height: 45px; border-radius: 50%; border: 3px dashed white;
+            display: flex; justify-content: center; align-items: center; font-weight: bold;
+            cursor: pointer; transition: transform 0.1s; font-size: 0.8rem;
+        }
+        .chip.selected { transform: scale(1.15); border: 2px solid #fff; box-shadow: 0 0 10px #fff; }
+        .chip-10 { background: #3498db; }
+        .chip-50 { background: #9b59b6; }
+        .chip-100 { background: #e74c3c; }
+        .chip-500 { background: #2c3e50; color: #ffd700; border-color: #ffd700; }
+        .chip-1000 { background: linear-gradient(135deg, #f1c40f, #fff); color: #000; display: none; }
+        .chip-10000 { background: linear-gradient(135deg, #8e44ad, #fff); color: #fff; display: none; border-color: #fff; }
+        .chip-allin { 
+            background: linear-gradient(135deg, #e74c3c, #2c3e50); 
+            color: #fff; border-color: #ffd700; 
+            font-weight: 900; font-size: 0.9rem;
+            box-shadow: 0 0 5px var(--accent-gold);
+        }
+
+        .actions { display: flex; justify-content: center; margin-top: 10px; }
+        .btn-spin { background: var(--accent-gold); color: #000; padding: 10px 60px; font-family: 'VT323', monospace; font-size: 1.5rem; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-spin:disabled { background: #555; color: #888; cursor: not-allowed; }
+
+        /* Hard Reset Button (Izquierda Abajo) */
+        .btn-hard-reset {
+            position: fixed; bottom: 20px; left: 20px;
+            background: #c0392b; color: white; border: 2px solid #fff;
+            padding: 10px 20px; border-radius: 8px; cursor: pointer;
+            font-family: 'VT323', monospace; font-size: 1.2rem;
+            z-index: 9999; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transition: transform 0.2s;
+        }
+        .btn-hard-reset:hover { transform: scale(1.1); background: #e74c3c; }
+
+        /* --- Sidebar (Chat) --- */
+        aside { width: 280px; background: var(--chat-bg); border-left: 2px solid #333; display: flex; flex-direction: column; }
+        .panel-header { padding: 15px; background: #050505; font-size: 0.9rem; color: #888; border-bottom: 1px solid #333; font-family: 'VT323', monospace; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .chat-log {
+            flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px;
+            font-size: 0.9rem;
+        }
+        .chat-msg { max-width: 90%; padding: 8px 12px; border-radius: 12px; line-height: 1.4; position: relative; animation: fadeIn 0.3s; }
+        .chat-msg .sender-name { font-size: 0.7rem; font-weight: bold; margin-bottom: 3px; display: block; opacity: 0.8; }
+        .msg-dealer { align-self: flex-start; background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.3); color: #ffcccc; border-bottom-left-radius: 2px; }
+        .msg-dealer .sender-name { color: var(--accent-red); }
+        .msg-jimbo { align-self: flex-start; background: rgba(155, 89, 182, 0.15); border: 1px solid rgba(155, 89, 182, 0.3); color: #e0b0ff; border-bottom-left-radius: 2px; }
+        .msg-jimbo .sender-name { color: #9b59b6; }
+        .msg-user { align-self: flex-end; background: rgba(52, 152, 219, 0.2); border: 1px solid rgba(52, 152, 219, 0.5); color: #dbeaff; text-align: right; border-bottom-right-radius: 2px; }
+        .msg-user .sender-name { color: #3498db; }
+        .typing-indicator { font-size: 0.7rem; color: #666; font-style: italic; margin-left: 10px; display: none; }
+
+        .chat-input-area { padding: 10px; background: #050505; border-top: 1px solid #333; display: flex; gap: 5px; }
+        .chat-input { flex: 1; background: #222; border: 1px solid #444; color: #fff; border-radius: 4px; padding: 8px; font-family: 'Segoe UI', sans-serif; font-size: 0.9rem; outline: none; }
+        .chat-input:focus { border-color: var(--accent-gold); }
+        .btn-send { background: var(--accent-gold); border: none; color: #000; border-radius: 4px; padding: 0 12px; cursor: pointer; font-weight: bold; }
+
+        /* --- Modals --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 2000;
+            display: none; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: #222; width: 90%; max-width: 500px;
+            border-radius: 10px; border: 4px solid #fff;
+            padding: 30px; position: relative; text-align: center;
+            background-image: radial-gradient(#333 10%, transparent 10%); background-size: 20px 20px;
+        }
+        .modal-title { font-family: 'VT323'; font-size: 3rem; margin: 0; color: var(--accent-gold); text-transform: uppercase; }
+        .modal-msg { font-size: 1.2rem; color: #fff; margin: 20px 0; }
+        .btn-modal-primary {
+            background: #e74c3c; color: white; border: none; padding: 10px 30px;
+            font-size: 1.5rem; font-family: 'VT323'; cursor: pointer;
+            box-shadow: 0 4px 0 #922b21;
+        }
+        .btn-modal-primary:active { transform: translateY(4px); box-shadow: none; }
+
+        .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .shop-item { background: rgba(0,0,0,0.7); border: 2px solid #555; padding: 10px; text-align: center; border-radius: 8px; }
+        .item-price { color: var(--accent-gold); font-size: 1.2rem; margin: 10px 0; font-family: 'VT323', monospace; }
+        .btn-buy { background: #fff; color: #000; border: none; padding: 8px; width: 100%; cursor: pointer; font-weight: bold; }
+        .btn-buy:disabled { background: #444; color: #888; cursor: not-allowed; }
+
+        /* --- Animaciones --- */
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity:1; transform: translateY(0); } }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px) rotate(-5deg); } 75% { transform: translateX(5px) rotate(5deg); } 100% { transform: translateX(0); } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); } }
+
+        #notification-area { position: fixed; top: 80px; right: 320px; display: flex; flex-direction: column; gap: 10px; z-index: 100; }
+        .toast { background: #fff; color: #000; padding: 15px; border-radius: 5px; border-left: 5px solid #000; font-family: 'VT323', monospace; font-size: 1.2rem; box-shadow: 5px 5px 0 rgba(0,0,0,0.5); animation: slideIn 0.3s; }
+        .toast-auto { border-left-color: #e67e22; }
+
+        @media (max-width: 900px) {
+            main { flex-direction: column; }
+            .jimbo-container { display: none; }
+            aside { width: 100%; height: 200px; order: 3; }
+            .header-controls { flex-direction: column; gap: 5px; }
+            #notification-area { right: 20px; }
+            .btn-hard-reset { padding: 5px 10px; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Shop Modal -->
+    <div class="modal-overlay" id="shop-modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span style="position:absolute; right:20px; top:20px; cursor:pointer; font-size:2rem;" onclick="toggleShop()">&times;</span>
+            <h2 class="modal-title" style="font-size:2rem;">TIENDA & MAZO</h2>
+            <div style="text-align:center; margin-bottom:20px;">
+                <button class="btn-deck" style="font-size:1.5rem; padding:10px 30px;" onclick="buyRandomCard()">🎴 ROBAR CARTA (100₳)</button>
+            </div>
+            <div class="shop-grid" id="shop-container"></div>
+        </div>
+    </div>
+
+    <!-- Level Up Modal -->
+    <div class="modal-overlay" id="levelup-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">¡RONDA SUPERADA!</h2>
+            <div class="modal-msg">
+                Has alcanzado el objetivo.<br>
+                <span style="color:#2ecc71; font-size:1.5rem;">Preparando siguiente desafío...</span>
+            </div>
+            <button class="btn-modal-primary" onclick="nextRound()">CONTINUAR</button>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div class="modal-overlay" id="gameover-modal">
+        <div class="modal-content" style="border-color:#e74c3c;">
+            <h2 class="modal-title" style="color:#e74c3c;">GAME OVER</h2>
+            <div class="modal-msg">
+                Te has quedado sin fichas.<br>
+                El casino siempre gana...
+            </div>
+            <button class="btn-modal-primary" onclick="resetGame()">REINTENTAR</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="header-left">
+            <div class="brand">BALATRO <span style="color:#e74c3c">ROULETTE</span></div>
+            <div class="mode-status" id="mode-status">MODO: <span>LIBRE</span></div>
+        </div>
+        <div class="header-controls">
+            <!-- Barra Progreso -->
+            <div class="round-progress-container" id="round-progress-ui">
+                <div class="round-text">
+                    <span>R <span id="round-num">1</span></span>
+                    <span>OBJ: <span id="round-goal-display">1500</span></span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progress-fill"></div>
+                </div>
+            </div>
+
+            <button class="btn-start-run" onclick="startRun()">NUEVO RETO</button>
+            <button class="btn-shop" onclick="toggleShop()">TIENDA</button>
+            <div class="balance-box">₳ <span id="user-balance">1000</span></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="left-panel">
+            <div class="dealer-container">
+                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=AnimeDealer" class="dealer-img" alt="Dealer">
+            </div>
+
+            <canvas id="rouletteCanvas" width="300" height="300"></canvas>
+
+            <div class="result-display">
+                <div class="result-number" id="display-result">-</div>
+                <div id="effect-text" class="effect-indicator">Efecto Activo</div>
+                <div style="font-size:0.8rem; color:#aaa;">MULTIPLICADOR: <span id="total-mult-display" style="color:#e74c3c">x1</span></div>
+            </div>
+
+            <div class="jimbo-container" id="jimbo">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="20" y="30" width="60" height="50" rx="20" fill="#7c38a8" stroke="#000" stroke-width="3"/>
+                    <rect x="30" y="60" width="40" height="5" fill="#5a2980"/>
+                    <rect x="30" y="70" width="40" height="5" fill="#5a2980"/>
+                    <circle cx="50" cy="55" r="12" fill="#ffd700" stroke="#000" stroke-width="2"/>
+                    <circle id="jimbo-pupil" cx="50" cy="55" r="5" fill="#000"/>
+                    <path id="jimbo-eyelid" d="M 35 50 Q 50 40 65 50" fill="none" stroke="#000" stroke-width="0" opacity="0.5"/>
+                </svg>
+            </div>
+        </section>
+
+        <section class="right-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-family:'VT323'; font-size:1.2rem; color:#fff;">CARTAS EN MANO</span>
+                <button onclick="clearCards()" style="background:none; border:none; color:#e74c3c; cursor:pointer; font-size:0.8rem;">Descartar</button>
+            </div>
+            <div class="active-cards-section" id="active-cards">
+                <div style="color:#666; margin:auto; font-size:0.9rem; font-style:italic;">Sin cartas...</div>
+            </div>
+
+            <div class="betting-board" id="numbers-grid">
+                <div class="bet-cell green" onclick="placeBet('number', 0)">0</div>
+            </div>
+
+            <div class="outside-bets">
+                <button class="bet-btn btn-red" onclick="placeBet('color', 'red')">ROJO</button>
+                <button class="bet-btn btn-black" onclick="placeBet('color', 'black')">NEGRO</button>
+            </div>
+
+            <div class="controls-area">
+                <div class="chip-selector">
+                    <div class="chip chip-10 selected" onclick="selectChip(10, this)">10</div>
+                    <div class="chip chip-50" onclick="selectChip(50, this)">50</div>
+                    <div class="chip chip-100" onclick="selectChip(100, this)">100</div>
+                    <div class="chip chip-500" onclick="selectChip(500, this)">500</div>
+                    <div class="chip chip-1000" id="chip-1000" onclick="selectChip(1000, this)">1K</div>
+                    <div class="chip chip-10000" id="chip-10000" onclick="selectChip(10000, this)">10K</div>
+                    <!-- Nueva Ficha ALL IN -->
+                    <div class="chip chip-allin" onclick="selectChip('allin', this)">ALL</div>
+                </div>
+                <div class="actions">
+                    <button class="btn-spin" id="spin-btn" onclick="spinWheel()">JUGAR</button>
+                </div>
+            </div>
+        </section>
+
+        <aside>
+            <div class="panel-header">Chat Sala Privada</div>
+            <div class="chat-log" id="chat-log"></div>
+            <div class="typing-indicator" id="typing-indicator">Alguien está escribiendo...</div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" class="chat-input" placeholder="Escribe un mensaje..." onkeypress="handleEnter(event)">
+                <button class="btn-send" onclick="sendMessage()">➤</button>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Botón Hard Reset (Abajo Izquierda) -->
+    <button class="btn-hard-reset" onclick="hardReset()">☠️ RESET TOTAL</button>
+
+    <div id="notification-area"></div>
+
+    <script>
+        // --- Configuración y Estado ---
+        const gameState = {
+            balance: parseInt(localStorage.getItem('balatro_balance')) || 1000,
+            currentBets: {},
+            selectedChipValue: 10,
+            isSpinning: false,
+            rotation: 0,
+            speed: 0,
+            wheelNumbers: [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26],
+            activeCards: [], 
+            inventory: JSON.parse(localStorage.getItem('balatro_inventory')) || [],
+            isRunMode: JSON.parse(localStorage.getItem('balatro_isRun')) || false,
+            currentRound: parseInt(localStorage.getItem('balatro_round')) || 1,
+            roundGoal: parseInt(localStorage.getItem('balatro_goal')) || 1500
+        };
+
+        const shopItems = [
+            { id: 'goldChip', name: 'Ficha Platino', price: 5000, desc: 'Desbloquea apuesta de 1000.', type: 'unlock', target: 'chip-1000' },
+            { id: 'holoChip', name: 'Ficha Holográfica', price: 50000, desc: 'Desbloquea apuesta de 10000.', type: 'unlock', target: 'chip-10000' },
+            { id: 'lifeInsurance', name: 'Seguro de Vida', price: 2000, desc: 'Salva de la bancarrota (+500).', type: 'passive' },
+            { id: 'vipSkin', name: 'Skin Cyberpunk', price: 10000, desc: 'Cambia el tema visual.', type: 'cosmetic', target: 'skin-vip' }
+        ];
+
+        const cardPool = [
+            { type: 'mult', mult: 2, condition: 'red', name: 'x2 Rojo', color: 'red', desc: 'Duplica si gana Rojo.' },
+            { type: 'mult', mult: 2, condition: 'black', name: 'x2 Negro', color: 'black', desc: 'Duplica si gana Negro.' },
+            { type: 'mult', mult: 5, condition: 'any', name: 'x5 Global', color: 'blue', desc: 'Multiplica cualquier victoria x5.' },
+            { type: 'mult', mult: 10, condition: 'zero', name: 'Jackpot 0', color: 'red', desc: 'x10 si sale 0.' },
+            
+            { type: 'force_red', name: 'Imán Rojo', color: 'red', desc: '¡Fuerza a que salga ROJO!', rarity: 'rare' },
+            { type: 'force_black', name: 'Imán Negro', color: 'black', desc: '¡Fuerza a que salga NEGRO!', rarity: 'rare' },
+            
+            { type: 'insurance', name: 'Seguro de Apuesta', color: 'orange', desc: 'Recuperas tu apuesta si pierdes.', rarity: 'common' },
+            { type: 'ghost', name: 'El Fantasma', color: 'blue', desc: '20% chance de recuperar apuesta al perder.', rarity: 'rare' },
+            
+            { type: 'high_payout', name: 'Números de Oro', color: 'orange', desc: 'Los números pagan 50:1 (35).', rarity: 'rare' },
+            { type: 'super_color', name: 'Banda Magna', color: 'blue', desc: 'El color paga 3:1 (1).', rarity: 'common' },
+            
+            { type: 'no_zero', name: 'Trampa del 0', color: 'orange', desc: 'El 0 se convierte en ROJO.', rarity: 'rare' },
+            { type: 'mult', mult: 10, condition: 'any', name: 'Sangre de Dragón', color: 'purple', desc: 'x10 Global a todo.', rarity: 'legendary' },
+            { type: 'risky', name: 'La Duda', color: 'black', desc: '50% x4 Ganancia, 50% Pérdida Total.', rarity: 'legendary' }
+        ];
+
+        const colors = { red: [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36], black: [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35], green: [0] };
+        
+        const canvas = document.getElementById('rouletteCanvas');
+        const ctx = canvas.getContext('2d');
+        const jimboPupil = document.getElementById('jimbo-pupil');
+        const jimboEyelid = document.getElementById('jimbo-eyelid');
+        const progressBarFill = document.getElementById('progress-bar-fill');
+        const effectText = document.getElementById('effect-text');
+
+        // --- Inicialización ---
+        window.onload = () => {
+            loadInventory();
+            initBoard();
+            drawWheel();
+            renderShop();
+            updateBalanceUI();
+            updateRoundUI();
+            initChat();
+
+            setTimeout(() => { 
+                if(gameState.isRunMode) {
+                    if (gameState.balance >= gameState.roundGoal) autoAdvanceCheckOnLoad();
+                }
+            }, 1000);
+        };
+
+        function saveGame() {
+            localStorage.setItem('balatro_balance', gameState.balance);
+            localStorage.setItem('balatro_inventory', JSON.stringify(gameState.inventory));
+            localStorage.setItem('balatro_isRun', gameState.isRunMode);
+            localStorage.setItem('balatro_round', gameState.currentRound);
+            localStorage.setItem('balatro_goal', gameState.roundGoal);
+        }
+
+        // --- HARD RESET ---
+        function hardReset() {
+            if(confirm("⚠️ ESTO BORRARÁ TODO TU PROGRESO.\n\n¿Estás seguro de reiniciar el juego por completo?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        // --- Funciones Auxiliares ---
+        function getColor(num) {
+            if (num === 0) return 'green';
+            if (colors.red.includes(num)) return 'red';
+            return 'black';
+        }
+
+        function getNumberColor(num) {
+             if (num === 0) return '#27ae60';
+             if (colors.red.includes(num)) return '#e74c3c';
+             return '#2c3e50';
+        }
+
+        // --- Lógica de Selección de Ficha (ACTUALIZADA) ---
+        function selectChip(val, el) {
+            if (gameState.isSpinning) return;
+            
+            // Si seleccionamos All In, verificamos si hay saldo primero
+            if (val === 'allin') {
+                if (gameState.balance <= 0) {
+                    showToast("¡No tienes fichas!", "error");
+                    return;
+                }
+            }
+
+            gameState.selectedChipValue = val;
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        // --- SISTEMA DE CHAT ---
+        function initChat() {
+            const chatLog = document.getElementById('chat-log');
+            addChatMessage('dealer', '¡Hola! Usa la ficha ALL para jugar todo lo que tienes.');
+            
+            setInterval(() => {
+                if(Math.random() > 0.8 && !gameState.isSpinning) {
+                    const randomMsgs = [
+                        { sender: 'jimbo', text: 'HE DETECTADO MODIFICADORES DE PROBABILIDAD EN EL MAZO.' },
+                        { sender: 'dealer', text: '¿Has probado el Imán? Es como hacer trampa... legal.' }
+                    ];
+                    const msg = randomMsgs[Math.floor(Math.random() * randomMsgs.length)];
+                    addChatMessage(msg.sender, msg.text);
+                }
+            }, 25000);
+        }
+
+        function addChatMessage(sender, text) {
+            const chatLog = document.getElementById('chat-log');
+            const div = document.createElement('div');
+            let senderName = sender === 'user' ? 'Tú' : (sender === 'dealer' ? 'Dealer' : 'Jimbo');
+            div.className = `chat-msg msg-${sender}`;
+            div.innerHTML = `<span class="sender-name">${senderName}</span>${text}`;
+            chatLog.appendChild(div);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if(!text) return;
+            addChatMessage('user', text);
+            input.value = '';
+            processBotResponse(text.toLowerCase());
+        }
+        function handleEnter(e) { if (e.key === 'Enter') sendMessage(); }
+        function processBotResponse(text) {
+            const typingIndicator = document.getElementById('typing-indicator');
+            setTimeout(() => { typingIndicator.style.display = 'block'; }, 500);
+            const delay = 1000 + Math.random() * 1500;
+            setTimeout(() => {
+                typingIndicator.style.display = 'none';
+                let response = null;
+                let responder = 'dealer';
+                if (text.includes('reset')) response = "El botón rojo de abajo borra todo.";
+                if (text.includes('all')) response = "La ficha ALL apuesta todo tu saldo. ¡Peligroso!";
+                if (response) addChatMessage(responder, response);
+            }, delay);
+        }
+
+        // --- Lógica de Rondas ---
+        function startRun() {
+            if(gameState.isRunMode && !confirm("¿Reiniciar progreso de rondas?")) return;
+            gameState.isRunMode = true;
+            gameState.currentRound = 1;
+            gameState.balance = 1000;
+            gameState.activeCards = []; 
+            gameState.roundGoal = 1500; 
+            updateBalanceUI(); updateRoundUI(); renderActiveCards(); saveGame();
+            addChatMessage('dealer', "¡Iniciando nuevo reto!");
+        }
+        function updateRoundUI() {
+            const modeText = document.querySelector('.mode-status span');
+            const uiContainer = document.getElementById('round-progress-ui');
+            if (gameState.isRunMode) {
+                modeText.innerText = "RONDAS INFINITAS";
+                uiContainer.style.display = 'flex';
+                document.getElementById('round-num').innerText = gameState.currentRound;
+                document.getElementById('round-goal-display').innerText = gameState.roundGoal;
+                let pct = (gameState.balance / gameState.roundGoal) * 100;
+                if (pct > 100) pct = 100;
+                progressBarFill.style.width = `${pct}%`;
+            } else {
+                modeText.innerText = "LIBRE";
+                uiContainer.style.display = 'none';
+            }
+        }
+        function checkRoundCompletion() {
+            if (!gameState.isRunMode) return;
+            if (gameState.balance >= gameState.roundGoal) {
+                setTimeout(() => { document.getElementById('levelup-modal').style.display = 'flex'; setJimboEmotion('happy'); }, 1000);
+            }
+        }
+        function autoAdvanceCheckOnLoad() {
+            let roundsSkipped = 0;
+            while (gameState.balance >= gameState.roundGoal) {
+                gameState.currentRound++;
+                gameState.roundGoal = Math.floor(1500 + Math.pow(gameState.currentRound, 1.5) * 500);
+                roundsSkipped++;
+            }
+            if (roundsSkipped > 0) { updateRoundUI(); saveGame(); showToast(`Avanzado ${roundsSkipped} rondas.`, "info"); }
+        }
+        function nextRound() {
+            document.getElementById('levelup-modal').style.display = 'none';
+            let roundsSkipped = 0;
+            do {
+                gameState.currentRound++;
+                gameState.roundGoal = Math.floor(1500 + Math.pow(gameState.currentRound, 1.5) * 500);
+                roundsSkipped++;
+            } while (gameState.balance >= gameState.roundGoal);
+            updateRoundUI(); saveGame();
+            if (roundsSkipped > 1) showToast(`¡SALTASTE ${roundsSkipped} RONDAS!`, "success", true);
+            else showToast(`RONDA ${gameState.currentRound} INICIADA`, "success");
+        }
+        function checkGameOver() {
+            if (!gameState.isRunMode) return;
+            if (gameState.balance <= 0) {
+                if (gameState.inventory.includes('lifeInsurance')) {
+                    gameState.balance = 500;
+                    updateBalanceUI(); updateRoundUI(); saveGame();
+                    showToast("¡SEGURO DE VIDA UTILIZADO!", "warning");
+                    addChatMessage('dealer', "Salvado por el seguro.");
+                } else {
+                    document.getElementById('gameover-modal').style.display = 'flex';
+                    setJimboEmotion('sad');
+                    addChatMessage('dealer', "Game Over.");
+                }
+            }
+        }
+        function resetGame() { document.getElementById('gameover-modal').style.display = 'none'; startRun(); }
+
+        // --- Lógica de Cartas ---
+        function buyRandomCard() {
+            if (gameState.balance < 100) { showToast("¡Necesitas 100 fichas!", "error"); return; }
+            gameState.balance -= 100;
+            updateBalanceUI(); updateRoundUI();
+            const randomCard = cardPool[Math.floor(Math.random() * cardPool.length)];
+            gameState.activeCards.push(randomCard);
+            renderActiveCards();
+            showToast(`Carta ${randomCard.name} añadida!`, "success");
+        }
+        function renderActiveCards() {
+            const container = document.getElementById('active-cards');
+            container.innerHTML = '';
+            if (gameState.activeCards.length === 0) { container.innerHTML = '<div style="color:#666; margin:auto; font-size:0.9rem; font-style:italic;">Sin cartas...</div>'; return; }
+            gameState.activeCards.forEach((card, index) => {
+                const div = document.createElement('div');
+                div.className = `balatro-card ${card.color}`;
+                div.innerHTML = `<div class="mult">${card.name}</div><div class="card-desc">${card.desc}</div><div class="remove-card" onclick="removeCard(${index})">×</div>`;
+                container.appendChild(div);
+            });
+        }
+        function removeCard(index) { gameState.activeCards.splice(index, 1); renderActiveCards(); }
+        function clearCards() { gameState.activeCards = []; renderActiveCards(); }
+
+        // --- Tienda ---
+        function toggleShop() { const modal = document.getElementById('shop-modal'); modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex'; }
+        function renderShop() {
+            const container = document.getElementById('shop-container');
+            container.innerHTML = '';
+            shopItems.forEach(item => {
+                const isOwned = gameState.inventory.includes(item.id);
+                const div = document.createElement('div');
+                div.className = `shop-item ${isOwned ? 'purchased' : ''}`;
+                div.innerHTML = `<div style="font-weight:bold; color:#fff;">${item.name}</div><div style="font-size:0.8rem; color:#aaa; margin:5px 0;">${item.desc}</div>${isOwned ? '<div style="color:#2ecc71;">POSEÍDO</div>' : `<div class="item-price">${item.price}₳</div><button class="btn-buy" onclick="buyItem('${item.id}')">COMPRAR</button>`}`;
+                container.appendChild(div);
+            });
+        }
+        function buyItem(id) {
+            const item = shopItems.find(i => i.id === id);
+            if (gameState.balance >= item.price) {
+                gameState.balance -= item.price;
+                gameState.inventory.push(id);
+                updateBalanceUI(); updateRoundUI(); saveGame(); renderShop(); loadInventory();
+                showToast(`Compraste ${item.name}`, "success");
+            } else { showToast("Saldo insuficiente", "error"); }
+        }
+
+        // --- Core del Juego ---
+        function initBoard() {
+            const grid = document.getElementById('numbers-grid');
+            for (let i = 1; i <= 36; i++) {
+                const cell = document.createElement('div');
+                cell.className = `bet-cell ${getColor(i) === 'red' ? 'red' : 'black'}`;
+                cell.id = `num-${i}`; // ← ARREGLO CRÍTICO
+                cell.innerText = i;
+                cell.onclick = () => placeBet('number', i);
+                grid.appendChild(cell);
+            }
+        }
+
+        function placeBet(type, value) {
+            if (gameState.isSpinning) return;
+
+            // Calcular el monto de la apuesta (Lógica ALL IN)
+            let betAmount = gameState.selectedChipValue;
+            if (betAmount === 'allin') {
+                betAmount = gameState.balance;
+            }
+
+            if (betAmount <= 0) return;
+            if (gameState.balance < betAmount) return;
+            
+            gameState.balance -= betAmount;
+            updateBalanceUI(); updateRoundUI();
+
+            const key = `${type}_${value}`;
+            if (!gameState.currentBets[key]) gameState.currentBets[key] = { type, value, amount: 0 };
+            gameState.currentBets[key].amount += betAmount;
+
+            const target = type === 'number' ? 
+                (value === 0 ? document.querySelector('.bet-cell.green') : document.getElementById(`num-${value}`)) :
+                (value === 'red' ? document.querySelector('.btn-red') : document.querySelector('.btn-black'));
+
+            const existing = target.querySelector('.chip-marker');
+            if(existing) existing.remove();
+
+            const chip = document.createElement('div');
+            chip.className = 'chip-marker';
+            chip.innerText = gameState.currentBets[key].amount;
+            target.appendChild(chip);
+        }
+
+        function drawWheel() {
+            const cx = 150, cy = 150, r = 145, arc = (2*Math.PI)/gameState.wheelNumbers.length;
+            ctx.clearRect(0,0,300,300);
+            ctx.save();
+            ctx.translate(cx, cy); ctx.rotate(gameState.rotation);
+            gameState.wheelNumbers.forEach((n, i) => {
+                ctx.beginPath();
+                ctx.moveTo(0,0); ctx.arc(0,0, r, i*arc, (i+1)*arc);
+                ctx.fillStyle = getNumberColor(n); ctx.fill(); ctx.stroke();
+                ctx.save(); ctx.rotate(i*arc+arc/2); ctx.translate(r-20,0); ctx.rotate(Math.PI/2);
+                ctx.fillStyle="#fff"; ctx.font="bold 14px Arial"; ctx.fillText(n, -4, 4); ctx.restore();
+            });
+            ctx.restore();
+            ctx.beginPath(); ctx.moveTo(140, 5); ctx.lineTo(160, 5); ctx.lineTo(150, 30); ctx.fillStyle="#ffd700"; ctx.fill();
+        }
+
+        function spinWheel() {
+            if (gameState.isSpinning || Object.keys(gameState.currentBets).length === 0) return;
+            gameState.isSpinning = true;
+            document.getElementById('spin-btn').disabled = true;
+            document.getElementById('display-result').innerText = "?";
+            effectText.style.opacity = 0;
+            gameState.speed = 0.4 + Math.random()*0.2;
+            animate();
+            setJimboEmotion('neutral');
+        }
+
+        function animate() {
+            if (gameState.speed > 0) {
+                gameState.rotation += gameState.speed;
+                gameState.rotation %= 2*Math.PI;
+                drawWheel();
+                gameState.speed *= 0.985;
+                if (gameState.speed < 0.002) { gameState.speed = 0; calculateResult(); }
+                else requestAnimationFrame(animate);
+            }
+        }
+
+        function calculateResult() {
+            gameState.isSpinning = false;
+            document.getElementById('spin-btn').disabled = false;
+
+            const arc = (2*Math.PI)/gameState.wheelNumbers.length;
+            let angle = 1.5*Math.PI - gameState.rotation;
+            while (angle < 0) angle += 2*Math.PI; while (angle >= 2*Math.PI) angle -= 2*Math.PI;
+            
+            let winningNum = gameState.wheelNumbers[Math.floor(angle/arc)];
+            let originalNum = winningNum;
+            let winColor = getColor(winningNum);
+            let resultWasModified = false;
+
+            const hasNoZero = gameState.activeCards.some(c => c.type === 'no_zero');
+            if (hasNoZero && winningNum === 0) {
+                winningNum = 1; winColor = 'red'; resultWasModified = true;
+            }
+
+            let forcedColor = null;
+            if (gameState.activeCards.some(c => c.type === 'force_red')) forcedColor = 'red';
+            if (gameState.activeCards.some(c => c.type === 'force_black')) forcedColor = 'black';
+
+            if (forcedColor && winColor !== forcedColor) {
+                const resultDisplay = document.getElementById('display-result');
+                resultDisplay.style.animation = 'shake 0.5s';
+                setTimeout(() => resultDisplay.style.animation = '', 500);
+                const arr = forcedColor === 'red' ? colors.red : colors.black;
+                winningNum = arr[Math.floor(Math.random() * arr.length)];
+                winColor = forcedColor;
+                resultWasModified = true;
+                effectText.innerText = `IMÁN ${forcedColor.toUpperCase()} ACTIVO`;
+                effectText.style.color = forcedColor === 'red' ? '#e74c3c' : '#2c3e50';
+                effectText.style.opacity = 1;
+            }
+
+            document.getElementById('display-result').innerText = winningNum;
+            document.getElementById('display-result').style.color = winColor === 'red' ? '#e74c3c' : (winColor === 'black' ? '#333' : '#27ae60');
+
+            let totalWin = 0;
+            let totalBetSum = 0;
+            let usedCards = [];
+            let colorMult = 1;
+            let numberPayout = 35;
+            let globalMult = 1;
+
+            gameState.activeCards.forEach(card => {
+                let active = false;
+                if (card.type === 'mult') {
+                    if (card.condition === 'any') active = true;
+                    else if (card.condition === 'red' && winColor === 'red') active = true;
+                    else if (card.condition === 'black' && winColor === 'black') active = true;
+                    else if (card.condition === 'zero' && originalNum === 0) active = true;
+                    if (active) { globalMult *= card.mult; usedCards.push(card.name); }
+                }
+                if (card.type === 'super_color' && (winColor === 'red' || winColor === 'black')) { colorMult = 3; usedCards.push(card.name); }
+                if (card.type === 'high_payout' && winColor !== 'green') { numberPayout = 50; usedCards.push(card.name); }
+            });
+
+            Object.values(gameState.currentBets).forEach(bet => {
+                totalBetSum += bet.amount;
+                let won = false, mult = 0;
+                if (bet.type === 'number' && bet.value === winningNum) { won = true; mult = numberPayout; }
+                else if (bet.type === 'color' && bet.value === winColor) { won = true; mult = colorMult; }
+                if (won) totalWin += (bet.amount * mult * globalMult);
+            });
+
+            const hasInsurance = gameState.activeCards.some(c => c.type === 'insurance');
+            const hasGhost = gameState.activeCards.some(c => c.type === 'ghost');
+            
+            if (totalWin > 0) {
+                gameState.balance += totalWin;
+                updateBalanceUI(); updateRoundUI();
+                setJimboEmotion('happy');
+                showToast(`¡GANASTE ${Math.floor(totalWin)}!`, "success");
+                gameState.activeCards = gameState.activeCards.filter(c => !usedCards.includes(c.name) && c.type !== 'insurance');
+                renderActiveCards();
+                checkRoundCompletion();
+            } else {
+                // Lógica arreglada para La Duda
+                const hasDoubt = gameState.activeCards.some(c => c.type === 'risky');
+                
+                if (hasDoubt) {
+                    const roll = Math.random();
+                    if (roll > 0.5) {
+                        totalWin = totalBetSum * 4;
+                        gameState.balance += totalWin;
+                        updateBalanceUI(); updateRoundUI();
+                        setJimboEmotion('neutral');
+                        effectText.innerText = "¡LA DUDA FAVORECIO!";
+                        effectText.style.color = "#e67e22"; effectText.style.opacity = 1;
+                        gameState.activeCards = gameState.activeCards.filter(c => c.type !== 'risky');
+                        renderActiveCards();
+                        saveGame();
+                        setTimeout(() => { document.querySelectorAll('.chip-marker').forEach(e => e.remove()); gameState.currentBets = {}; }, 3000);
+                        return;
+                    } else {
+                        totalWin = 0;
+                        effectText.innerText = "LA DUDA TE ENGAÑÓ"; effectText.style.color = "#c0392b"; effectText.style.opacity = 1;
+                        gameState.activeCards = gameState.activeCards.filter(c => c.type !== 'risky');
+                        renderActiveCards();
+                    }
+                }
+
+                if (hasGhost && Math.random() < 0.2) {
+                    totalWin = totalBetSum;
+                    gameState.balance += totalWin;
+                    updateBalanceUI(); updateRoundUI();
+                    setJimboEmotion('neutral');
+                    effectText.innerText = "¡EL FANTASMA TE SALVÓ!";
+                    effectText.style.color = "#00d2ff"; effectText.style.opacity = 1;
+                    showToast("¡FANTASMA ACTIVADO!", "warning");
+                    gameState.activeCards = gameState.activeCards.filter(c => c.type !== 'ghost');
+                    renderActiveCards();
+                } else if (hasInsurance) {
+                    totalWin = totalBetSum;
+                    gameState.balance += totalWin;
+                    updateBalanceUI(); updateRoundUI();
+                    setJimboEmotion('neutral');
+                    effectText.innerText = "SEGURO ACTIVADO";
+                    effectText.style.color = "#f39c12"; effectText.style.opacity = 1;
+                    showToast(`¡SEGURO DEVUELTO!`, "warning");
+                    gameState.activeCards = gameState.activeCards.filter(c => c.type !== 'insurance');
+                    renderActiveCards();
+                } else {
+                    setJimboEmotion('sad');
+                    showToast("Perdiste...", "error");
+                    checkGameOver();
+                }
+            }
+
+            setTimeout(() => {
+                document.querySelectorAll('.chip-marker').forEach(e => e.remove());
+                gameState.currentBets = {};
+            }, 3000);
+            
+            saveGame();
+        }
+
+        // --- Utilidades ---
+        function setJimboEmotion(state) {
+            const pupil = document.getElementById('jimbo-pupil');
+            const lid = document.getElementById('jimbo-eyelid');
+            if (state === 'happy') { pupil.setAttribute('cy', '55'); lid.setAttribute('d', 'M 35 45 Q 50 35 65 45'); lid.setAttribute('opacity', '1'); }
+            else if (state === 'sad') { pupil.setAttribute('cy', '60'); lid.setAttribute('d', 'M 38 65 Q 50 70 62 65'); lid.setAttribute('opacity', '1'); }
+            else { pupil.setAttribute('cy', '55'); lid.setAttribute('d', ''); }
+        }
+
+        // Función faltante en el código original
+        function updateBalanceUI() {
+            document.getElementById('user-balance').innerText = gameState.balance.toLocaleString();
+        }
+
+        function loadInventory() {
+            const skin = gameState.inventory.find(i => i === 'vipSkin');
+            if (skin) document.body.classList.add('skin-vip');
+            
+            const chip1k = document.getElementById('chip-1000');
+            const chip10k = document.getElementById('chip-10000');
+            
+            if (gameState.inventory.includes('goldChip') && chip1k) chip1k.style.display = 'flex';
+            if (gameState.inventory.includes('holoChip') && chip10k) chip10k.style.display = 'flex';
+        }
+
+        function showToast(text, type = "info", persist = false) {
+            const area = document.getElementById('notification-area');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = text;
+            if (type === 'error') toast.style.borderLeftColor = '#e74c3c';
+            if (type === 'success') toast.style.borderLeftColor = '#2ecc71';
+            if (type === 'warning') toast.style.borderLeftColor = '#f39c12';
+            
+            area.appendChild(toast);
+            
+            if (!persist) {
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>
