@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Balatro Roulette - All In Chip</title>
+    <title>Balatro Roulette - Slots Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -15,17 +15,27 @@
             --accent-black: #2c3e50;
             --text-light: #ecf0f1;
             --chat-bg: #0f0f0f;
-            --bubble-user: #3498db;
-            --bubble-dealer: #e74c3c;
-            --bubble-jimbo: #9b59b6;
         }
 
+        /* Skin VIP */
         body.skin-vip {
             --bg-color: #0d0d0d;
             --table-color: #1a1a2e;
             --accent-gold: #00d2ff;
             --chat-bg: #151515;
         }
+
+        /* Skin Neon */
+        body.skin-neon {
+            --bg-color: #000000;
+            --table-color: #1a0b2e;
+            --accent-gold: #ff00ff;
+            --accent-red: #00ffff;
+            --chat-bg: #050510;
+            --table-border: #4b0082;
+        }
+        .skin-neon .brand { text-shadow: 2px 2px 0px #00ffff; color: #ff00ff; }
+        .skin-neon .bet-cell { border: 1px solid #ff00ff; box-shadow: 0 0 5px #ff00ff; }
 
         * { box-sizing: border-box; user-select: none; }
         
@@ -87,12 +97,13 @@
         }
         .btn-start-run:active { transform: translateY(4px); box-shadow: none; }
 
-        .btn-shop, .btn-deck {
+        .btn-shop, .btn-slots, .btn-deck {
             background: #e74c3c; border: none; padding: 5px 15px; border-radius: 5px;
             font-weight: bold; color: #fff; cursor: pointer; font-family: 'VT323', monospace; font-size: 1.2rem;
             box-shadow: 2px 2px 0px #000;
         }
         .btn-shop { background: var(--accent-gold); color: #000; }
+        .btn-slots { background: linear-gradient(135deg, #8e44ad, #3498db); } /* Botón Nuevo */
         .btn-deck { background: #9b59b6; }
 
         .balance-box {
@@ -204,6 +215,14 @@
         .balatro-card.blue { background: #a0c4ff; border-color: #0077b6; color: #0077b6; }
         .balatro-card.orange { background: #f0e68c; border-color: #daa520; color: #555; }
         .balatro-card.purple { background: #e0b0ff; border-color: #9b59b6; color: #555; }
+        .balatro-card.gold { background: linear-gradient(135deg, #ffd700, #fff); border-color: #d4af37; color: #000; font-weight: bold; } 
+        /* Estilo Permanente (Exclusivo Slots) */
+        .balatro-card.legendary-perm {
+            background: linear-gradient(135deg, #000, #8e44ad);
+            border: 2px solid #ffd700;
+            color: #ffd700;
+            box-shadow: 0 0 10px #ffd700;
+        }
         .balatro-card.mult { font-size: 1.8rem; font-weight: bold; }
         .card-desc { font-size: 0.6rem; text-align: center; padding: 2px; margin-top: 5px; }
         .remove-card {
@@ -235,6 +254,16 @@
             color: #000; border-radius: 50%; font-size: 9px; display: flex;
             justify-content: center; align-items: center; border: 1px dashed #fff;
             pointer-events: none; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            transition: transform 0.1s;
+        }
+
+        @keyframes chipDrop {
+            0% { transform: scale(0.5) translateY(-30px); opacity: 0; }
+            60% { transform: scale(1.1) translateY(5px); opacity: 1; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .chip-marker.new-chip {
+            animation: chipDrop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
 
         .controls-area { margin-top: auto; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; }
@@ -251,18 +280,14 @@
         .chip-500 { background: #2c3e50; color: #ffd700; border-color: #ffd700; }
         .chip-1000 { background: linear-gradient(135deg, #f1c40f, #fff); color: #000; display: none; }
         .chip-10000 { background: linear-gradient(135deg, #8e44ad, #fff); color: #fff; display: none; border-color: #fff; }
-        .chip-allin { 
-            background: linear-gradient(135deg, #e74c3c, #2c3e50); 
-            color: #fff; border-color: #ffd700; 
-            font-weight: 900; font-size: 0.9rem;
-            box-shadow: 0 0 5px var(--accent-gold);
-        }
+        .chip-100k { background: linear-gradient(135deg, #000, #434343); color: #fff; border: 3px solid #e74c3c; font-size: 0.7rem; display: none; }
+        .chip-100k.selected { box-shadow: 0 0 15px #e74c3c; transform: scale(1.2); }
+        .chip-allin { background: linear-gradient(135deg, #e74c3c, #2c3e50); color: #fff; border-color: #ffd700; font-weight: 900; font-size: 0.9rem; box-shadow: 0 0 5px var(--accent-gold); }
 
         .actions { display: flex; justify-content: center; margin-top: 10px; }
         .btn-spin { background: var(--accent-gold); color: #000; padding: 10px 60px; font-family: 'VT323', monospace; font-size: 1.5rem; border: none; border-radius: 5px; cursor: pointer; }
         .btn-spin:disabled { background: #555; color: #888; cursor: not-allowed; }
 
-        /* Hard Reset Button (Izquierda Abajo) */
         .btn-hard-reset {
             position: fixed; bottom: 20px; left: 20px;
             background: #c0392b; color: white; border: 2px solid #fff;
@@ -272,6 +297,25 @@
             transition: transform 0.2s;
         }
         .btn-hard-reset:hover { transform: scale(1.1); background: #e74c3c; }
+
+        /* --- Slot Machine Styles --- */
+        .slot-machine-container {
+            display: flex; gap: 20px; justify-content: center; margin: 30px 0;
+        }
+        .reel {
+            width: 100px; height: 120px;
+            background: #fff; border: 5px solid #333;
+            border-radius: 10px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 4rem; color: #000;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            position: relative; overflow: hidden;
+        }
+        .reel-strip {
+            display: flex; flex-direction: column;
+            transition: transform 0.1s linear;
+        }
+        .slot-result { font-family: 'VT323'; font-size: 2rem; margin: 10px 0; color: #ffd700; text-align: center; min-height: 30px; }
 
         /* --- Sidebar (Chat) --- */
         aside { width: 280px; background: var(--chat-bg); border-left: 2px solid #333; display: flex; flex-direction: column; }
@@ -323,12 +367,10 @@
         .btn-buy { background: #fff; color: #000; border: none; padding: 8px; width: 100%; cursor: pointer; font-weight: bold; }
         .btn-buy:disabled { background: #444; color: #888; cursor: not-allowed; }
 
-        /* --- Animaciones --- */
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity:1; transform: translateY(0); } }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px) rotate(-5deg); } 75% { transform: translateX(5px) rotate(5deg); } 100% { transform: translateX(0); } }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); } }
 
         #notification-area { position: fixed; top: 80px; right: 320px; display: flex; flex-direction: column; gap: 10px; z-index: 100; }
         .toast { background: #fff; color: #000; padding: 15px; border-radius: 5px; border-left: 5px solid #000; font-family: 'VT323', monospace; font-size: 1.2rem; box-shadow: 5px 5px 0 rgba(0,0,0,0.5); animation: slideIn 0.3s; }
@@ -355,6 +397,30 @@
                 <button class="btn-deck" style="font-size:1.5rem; padding:10px 30px;" onclick="buyRandomCard()">🎴 ROBAR CARTA (100₳)</button>
             </div>
             <div class="shop-grid" id="shop-container"></div>
+        </div>
+    </div>
+
+    <!-- Slots Modal -->
+    <div class="modal-overlay" id="slots-modal">
+        <div class="modal-content" style="background: #1a1a1a; border: 4px solid #8e44ad;">
+            <span style="position:absolute; right:20px; top:20px; cursor:pointer; font-size:2rem;" onclick="toggleSlots()">&times;</span>
+            <h2 class="modal-title" style="color: #8e44ad; text-shadow: 0 0 10px #8e44ad;">SLOTS</h2>
+            <div style="font-size: 1.2rem; color: #ccc; margin-bottom: 10px;">SACRIFICIA 1 CARTA PARA GIRAR</div>
+            <div id="slots-status" style="color: #e74c3c; height: 20px; font-weight: bold;"></div>
+            
+            <div class="slot-machine-container">
+                <div class="reel" id="reel-1"><div style="font-size: 3rem;">🍒</div></div>
+                <div class="reel" id="reel-2"><div style="font-size: 3rem;">🍒</div></div>
+                <div class="reel" id="reel-3"><div style="font-size: 3rem;">🍒</div></div>
+            </div>
+            
+            <div id="slot-result-text" class="slot-result"></div>
+
+            <button class="btn-modal-primary" style="background: #8e44ad; margin-top: 20px;" onclick="spinSlots()">GIRAR</button>
+            <div style="margin-top: 15px; font-size: 0.8rem; color: #777;">
+                3 👑 = CARTA LEGENDARIA<br>
+                3 🤖 = JACKPOT + CARTA
+            </div>
         </div>
     </div>
 
@@ -388,7 +454,6 @@
             <div class="mode-status" id="mode-status">MODO: <span>LIBRE</span></div>
         </div>
         <div class="header-controls">
-            <!-- Barra Progreso -->
             <div class="round-progress-container" id="round-progress-ui">
                 <div class="round-text">
                     <span>R <span id="round-num">1</span></span>
@@ -400,6 +465,7 @@
             </div>
 
             <button class="btn-start-run" onclick="startRun()">NUEVO RETO</button>
+            <button class="btn-slots" onclick="toggleSlots()">TRAGAPERRAS</button>
             <button class="btn-shop" onclick="toggleShop()">TIENDA</button>
             <div class="balance-box">₳ <span id="user-balance">1000</span></div>
         </div>
@@ -434,7 +500,10 @@
         <section class="right-panel">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-family:'VT323'; font-size:1.2rem; color:#fff;">CARTAS EN MANO</span>
-                <button onclick="clearCards()" style="background:none; border:none; color:#e74c3c; cursor:pointer; font-size:0.8rem;">Descartar</button>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="rerollCards()" style="background:#9b59b6; border:none; color:#fff; padding:2px 8px; border-radius:4px; cursor:pointer; font-size:0.8rem; box-shadow:1px 1px 0 #000;">REBARAJAR (50)</button>
+                    <button onclick="clearCards()" style="background:none; border:none; color:#e74c3c; cursor:pointer; font-size:0.8rem;">Descartar</button>
+                </div>
             </div>
             <div class="active-cards-section" id="active-cards">
                 <div style="color:#666; margin:auto; font-size:0.9rem; font-style:italic;">Sin cartas...</div>
@@ -457,7 +526,7 @@
                     <div class="chip chip-500" onclick="selectChip(500, this)">500</div>
                     <div class="chip chip-1000" id="chip-1000" onclick="selectChip(1000, this)">1K</div>
                     <div class="chip chip-10000" id="chip-10000" onclick="selectChip(10000, this)">10K</div>
-                    <!-- Nueva Ficha ALL IN -->
+                    <div class="chip chip-100k" id="chip-100k" onclick="selectChip(100000, this)">100K</div>
                     <div class="chip chip-allin" onclick="selectChip('allin', this)">ALL</div>
                 </div>
                 <div class="actions">
@@ -477,7 +546,6 @@
         </aside>
     </main>
 
-    <!-- Botón Hard Reset (Abajo Izquierda) -->
     <button class="btn-hard-reset" onclick="hardReset()">☠️ RESET TOTAL</button>
 
     <div id="notification-area"></div>
@@ -499,31 +567,43 @@
             roundGoal: parseInt(localStorage.getItem('balatro_goal')) || 1500
         };
 
+        // --- Shop Items ---
         const shopItems = [
             { id: 'goldChip', name: 'Ficha Platino', price: 5000, desc: 'Desbloquea apuesta de 1000.', type: 'unlock', target: 'chip-1000' },
             { id: 'holoChip', name: 'Ficha Holográfica', price: 50000, desc: 'Desbloquea apuesta de 10000.', type: 'unlock', target: 'chip-10000' },
+            { id: 'titanChip', name: 'Ficha Titán', price: 200000, desc: 'Desbloquea apuesta de 100,000.', type: 'unlock', target: 'chip-100k' },
             { id: 'lifeInsurance', name: 'Seguro de Vida', price: 2000, desc: 'Salva de la bancarrota (+500).', type: 'passive' },
-            { id: 'vipSkin', name: 'Skin Cyberpunk', price: 10000, desc: 'Cambia el tema visual.', type: 'cosmetic', target: 'skin-vip' }
+            { id: 'vipSkin', name: 'Skin Cyberpunk', price: 10000, desc: 'Cambia el tema visual.', type: 'cosmetic', target: 'skin-vip' },
+            { id: 'neonSkin', name: 'Skin Neon', price: 25000, desc: 'Colores brillantes y oscuros.', type: 'cosmetic', target: 'skin-neon' }
         ];
 
+        // --- Cartas Exclusivas Slots (Permanentes) ---
+        const exclusiveCards = [
+            { type: 'perm_emp', name: 'El Emperador', color: 'purple', desc: '¡PERMANENTE! Multiplicador x3 Global.', permanent: true },
+            { type: 'perm_bot', name: 'El Bot', color: 'blue', desc: '¡PERMANENTE! +200 Fichas por giro.', permanent: true }
+        ];
+
+        // --- Card Pool Normal ---
         const cardPool = [
             { type: 'mult', mult: 2, condition: 'red', name: 'x2 Rojo', color: 'red', desc: 'Duplica si gana Rojo.' },
             { type: 'mult', mult: 2, condition: 'black', name: 'x2 Negro', color: 'black', desc: 'Duplica si gana Negro.' },
             { type: 'mult', mult: 5, condition: 'any', name: 'x5 Global', color: 'blue', desc: 'Multiplica cualquier victoria x5.' },
             { type: 'mult', mult: 10, condition: 'zero', name: 'Jackpot 0', color: 'red', desc: 'x10 si sale 0.' },
-            
             { type: 'force_red', name: 'Imán Rojo', color: 'red', desc: '¡Fuerza a que salga ROJO!', rarity: 'rare' },
             { type: 'force_black', name: 'Imán Negro', color: 'black', desc: '¡Fuerza a que salga NEGRO!', rarity: 'rare' },
-            
+            { type: 'no_zero', name: 'Trampa del 0', color: 'orange', desc: 'El 0 se convierte en ROJO.', rarity: 'rare' },
             { type: 'insurance', name: 'Seguro de Apuesta', color: 'orange', desc: 'Recuperas tu apuesta si pierdes.', rarity: 'common' },
-            { type: 'ghost', name: 'El Fantasma', color: 'blue', desc: '20% chance de recuperar apuesta al perder.', rarity: 'rare' },
-            
+            { type: 'interest', name: 'Interés Compuesto', color: 'green', desc: 'Ganas +10% de tu saldo actual al ganar.', rarity: 'rare' },
+            { type: 'buffalo', name: 'El Búfalo', color: 'orange', desc: '+x1 Mult por cada 100 fichas apostadas.', rarity: 'rare' },
+            { type: 'high_roller', name: 'Alta Tensión', color: 'purple', desc: 'x4 Mult si apuestas más de 500.', rarity: 'rare' },
+            { type: 'even', name: 'Juez Par', color: 'blue', desc: 'x4 Mult si el número es PAR.', rarity: 'common' },
+            { type: 'lucky_7', name: 'Suerte del 7', color: 'red', desc: 'x10 Mult si sale un 7 (7, 17, 27).', rarity: 'legendary' },
+            { type: 'dozens', name: 'Primera Docena', color: 'blue', desc: 'x3 Mult si sale 1-12.', rarity: 'common' },
             { type: 'high_payout', name: 'Números de Oro', color: 'orange', desc: 'Los números pagan 50:1 (35).', rarity: 'rare' },
             { type: 'super_color', name: 'Banda Magna', color: 'blue', desc: 'El color paga 3:1 (1).', rarity: 'common' },
-            
-            { type: 'no_zero', name: 'Trampa del 0', color: 'orange', desc: 'El 0 se convierte en ROJO.', rarity: 'rare' },
-            { type: 'mult', mult: 10, condition: 'any', name: 'Sangre de Dragón', color: 'purple', desc: 'x10 Global a todo.', rarity: 'legendary' },
-            { type: 'risky', name: 'La Duda', color: 'black', desc: '50% x4 Ganancia, 50% Pérdida Total.', rarity: 'legendary' }
+            { type: 'risky', name: 'La Duda', color: 'black', desc: '50% x4 Ganancia, 50% Pérdida Total.', rarity: 'legendary' },
+            { type: 'ghost', name: 'El Fantasma', color: 'blue', desc: '20% chance de recuperar apuesta al perder.', rarity: 'rare' },
+            { type: 'chest', name: 'El Cofre', color: 'gold', desc: 'Al ganar, obtienes una carta extra aleatoria.', rarity: 'legendary' }
         ];
 
         const colors = { red: [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36], black: [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35], green: [0] };
@@ -534,6 +614,23 @@
         const jimboEyelid = document.getElementById('jimbo-eyelid');
         const progressBarFill = document.getElementById('progress-bar-fill');
         const effectText = document.getElementById('effect-text');
+
+        // --- Sistema de Audio ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playChipSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05);
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.06);
+        }
 
         // --- Inicialización ---
         window.onload = () => {
@@ -560,7 +657,6 @@
             localStorage.setItem('balatro_goal', gameState.roundGoal);
         }
 
-        // --- HARD RESET ---
         function hardReset() {
             if(confirm("⚠️ ESTO BORRARÁ TODO TU PROGRESO.\n\n¿Estás seguro de reiniciar el juego por completo?")) {
                 localStorage.clear();
@@ -568,31 +664,22 @@
             }
         }
 
-        // --- Funciones Auxiliares ---
         function getColor(num) {
             if (num === 0) return 'green';
             if (colors.red.includes(num)) return 'red';
             return 'black';
         }
-
         function getNumberColor(num) {
              if (num === 0) return '#27ae60';
              if (colors.red.includes(num)) return '#e74c3c';
              return '#2c3e50';
         }
 
-        // --- Lógica de Selección de Ficha (ACTUALIZADA) ---
         function selectChip(val, el) {
             if (gameState.isSpinning) return;
-            
-            // Si seleccionamos All In, verificamos si hay saldo primero
             if (val === 'allin') {
-                if (gameState.balance <= 0) {
-                    showToast("¡No tienes fichas!", "error");
-                    return;
-                }
+                if (gameState.balance <= 0) { showToast("¡No tienes fichas!", "error"); return; }
             }
-
             gameState.selectedChipValue = val;
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
             el.classList.add('selected');
@@ -602,19 +689,23 @@
         function initChat() {
             const chatLog = document.getElementById('chat-log');
             addChatMessage('dealer', '¡Hola! Usa la ficha ALL para jugar todo lo que tienes.');
-            
             setInterval(() => {
                 if(Math.random() > 0.8 && !gameState.isSpinning) {
                     const randomMsgs = [
-                        { sender: 'jimbo', text: 'HE DETECTADO MODIFICADORES DE PROBABILIDAD EN EL MAZO.' },
-                        { sender: 'dealer', text: '¿Has probado el Imán? Es como hacer trampa... legal.' }
+                        { sender: 'jimbo', text: 'HE DETECTADO UNA ANOMALÍA EN EL SECTOR 7... AH NO, ES SOLO EL DEALER.' },
+                        { sender: 'dealer', text: '¡No me hagas perder el tiempo, robot de lata!' },
+                        { sender: 'jimbo', text: '¿HAS PROBADO LAS TRAGAPERRAS? MI ALGORITMO DICE QUE TIENES UN 0.01% DE GANAR.' },
+                        { sender: 'jimbo', text: 'MI SISTEMA DE COOLING ESTA FALLANDO. ESTOY DEMASIADO EXCITADO POR LAS PROBABILIDADES.' },
+                        { sender: 'dealer', text: '¿Has probado el Imán? Es como hacer trampa... legal.' },
+                        { sender: 'jimbo', text: 'EL NÚMERO 0 ES MI FAVORITO. REPRESENTA EL VACÍO DE MI EXISTENCIA.' },
+                        { sender: 'dealer', text: 'Deja de asustar a los clientes, Jimbo.' },
+                        { sender: 'jimbo', text: 'COMPRANDO CARTAS... PROCESANDO RIESGO... CARGANDO DIVERSIÓN.' }
                     ];
                     const msg = randomMsgs[Math.floor(Math.random() * randomMsgs.length)];
                     addChatMessage(msg.sender, msg.text);
                 }
             }, 25000);
         }
-
         function addChatMessage(sender, text) {
             const chatLog = document.getElementById('chat-log');
             const div = document.createElement('div');
@@ -624,7 +715,6 @@
             chatLog.appendChild(div);
             chatLog.scrollTop = chatLog.scrollHeight;
         }
-
         function sendMessage() {
             const input = document.getElementById('chat-input');
             const text = input.value.trim();
@@ -644,6 +734,8 @@
                 let responder = 'dealer';
                 if (text.includes('reset')) response = "El botón rojo de abajo borra todo.";
                 if (text.includes('all')) response = "La ficha ALL apuesta todo tu saldo. ¡Peligroso!";
+                if (text.includes('jimbo')) { responder = 'jimbo'; response = "NO SOY UN ROBOT. SOY UNA ENTIDAD SUPERIOR."; }
+                if (text.includes('tragaperras')) { responder = 'jimbo'; response = "¡SÍ! SACRIFICA TUS CARTAS INÚTILES POR GLORIA ETERNA."; }
                 if (response) addChatMessage(responder, response);
             }, delay);
         }
@@ -729,14 +821,36 @@
             renderActiveCards();
             showToast(`Carta ${randomCard.name} añadida!`, "success");
         }
+
+        function rerollCards() {
+            const rerollCost = 50;
+            if (gameState.activeCards.length === 0) { showToast("No tienes cartas.", "error"); return; }
+            if (gameState.balance < rerollCost) { showToast(`Necesitas ${rerollCost} fichas.`, "error"); return; }
+            gameState.balance -= rerollCost;
+            updateBalanceUI();
+            const count = gameState.activeCards.length;
+            gameState.activeCards = [];
+            for(let i=0; i<count; i++) {
+                gameState.activeCards.push(cardPool[Math.floor(Math.random() * cardPool.length)]);
+            }
+            renderActiveCards();
+            playChipSound();
+            showToast("¡Mano rebarajada!", "info");
+            addChatMessage('jimbo', 'ESPERO QUE ESA NUEVA MANO NO SEA CASCARAS...');
+        }
+
         function renderActiveCards() {
             const container = document.getElementById('active-cards');
             container.innerHTML = '';
             if (gameState.activeCards.length === 0) { container.innerHTML = '<div style="color:#666; margin:auto; font-size:0.9rem; font-style:italic;">Sin cartas...</div>'; return; }
             gameState.activeCards.forEach((card, index) => {
                 const div = document.createElement('div');
-                div.className = `balatro-card ${card.color}`;
-                div.innerHTML = `<div class="mult">${card.name}</div><div class="card-desc">${card.desc}</div><div class="remove-card" onclick="removeCard(${index})">×</div>`;
+                // Clase especial para permanentes
+                let cardClass = `balatro-card ${card.color}`;
+                if (card.permanent) cardClass += " legendary-perm";
+                
+                div.className = cardClass;
+                div.innerHTML = `<div class="mult">${card.name}</div><div class="card-desc">${card.desc}</div>${card.permanent ? '' : `<div class="remove-card" onclick="removeCard(${index})">×</div>`}`;
                 container.appendChild(div);
             });
         }
@@ -766,13 +880,111 @@
             } else { showToast("Saldo insuficiente", "error"); }
         }
 
+        // --- Lógica SLOTS (Tragaperras) ---
+        const slotSymbols = ['🍒', '🍋', '🍇', '💎', '👑', '🤖'];
+        
+        function toggleSlots() { 
+            const modal = document.getElementById('slots-modal'); 
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+            document.getElementById('slot-result-text').innerText = "";
+            document.getElementById('slots-status').innerText = "";
+        }
+
+        function spinSlots() {
+            if (gameState.activeCards.length === 0) {
+                document.getElementById('slots-status').innerText = "¡NECESITAS UNA CARTA PARA SACRIFICAR!";
+                return;
+            }
+            if (gameState.activeCards.every(c => c.permanent)) {
+                document.getElementById('slots-status').innerText = "¡SOLO PUEDES SACRIFICAR CARTAS NORMALES!";
+                return;
+            }
+
+            // Sacrificar carta normal (prioridad a las últimas añadidas)
+            let sacrificeIndex = -1;
+            for (let i = gameState.activeCards.length - 1; i >= 0; i--) {
+                if (!gameState.activeCards[i].permanent) {
+                    sacrificeIndex = i;
+                    break;
+                }
+            }
+
+            if (sacrificeIndex === -1) return; // Seguridad extra
+
+            gameState.activeCards.splice(sacrificeIndex, 1);
+            renderActiveCards();
+            
+            // Animación de slots
+            const reels = [document.getElementById('reel-1'), document.getElementById('reel-2'), document.getElementById('reel-3')];
+            let results = [];
+            
+            // Girar
+            reels.forEach((reel, index) => {
+                let spins = 0;
+                let maxSpins = 10 + (index * 5);
+                const interval = setInterval(() => {
+                    const randomSym = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+                    reel.innerHTML = `<div style="font-size: 3rem;">${randomSym}</div>`;
+                    spins++;
+                    if (spins >= maxSpins) {
+                        clearInterval(interval);
+                        const finalSym = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+                        reel.innerHTML = `<div style="font-size: 3rem; animation: shake 0.5s;">${finalSym}</div>`;
+                        results[index] = finalSym;
+                        if (index === 2) checkSlotWin(results);
+                    }
+                }, 100);
+            });
+            document.getElementById('slots-status').innerText = "GIRANDO...";
+            document.getElementById('slot-result-text').innerText = "";
+        }
+
+        function checkSlotWin(results) {
+            document.getElementById('slots-status').innerText = "";
+            const text = document.getElementById('slot-result-text');
+            
+            // Lógica de premios
+            if (results[0] === results[1] && results[1] === results[2]) {
+                const symbol = results[0];
+                if (symbol === '🤖') {
+                    // Jackpot
+                    text.innerText = "¡JACKPOT! +10,000 FICHAS + CARTA EXCLUSIVA";
+                    gameState.balance += 10000;
+                    gameState.activeCards.push(exclusiveCards[1]); // El Bot
+                } else if (symbol === '👑') {
+                    // Legendaria
+                    text.innerText = "¡PREMIO! +5,000 FICHAS + CARTA LEGENDARIA";
+                    gameState.balance += 5000;
+                    gameState.activeCards.push(exclusiveCards[0]); // El Emperador
+                } else if (symbol === '💎') {
+                    text.innerText = "¡DIAMANTES! +1000 FICHAS + CARTA ALEATORIA";
+                    gameState.balance += 1000;
+                    gameState.activeCards.push(cardPool[Math.floor(Math.random() * cardPool.length)]);
+                } else if (symbol === '🍇') {
+                    text.innerText = "¡GRAN PREMIO! +500 FICHAS";
+                    gameState.balance += 500;
+                } else if (symbol === '🍋') {
+                    text.innerText = "¡PREMIO! +300 FICHAS";
+                    gameState.balance += 300;
+                } else {
+                    text.innerText = "¡PEQUEÑA! +200 FICHAS";
+                    gameState.balance += 200;
+                }
+            } else {
+                text.innerText = "NADA...";
+            }
+            updateBalanceUI();
+            renderActiveCards();
+            playChipSound();
+        }
+
         // --- Core del Juego ---
         function initBoard() {
             const grid = document.getElementById('numbers-grid');
             for (let i = 1; i <= 36; i++) {
                 const cell = document.createElement('div');
                 cell.className = `bet-cell ${getColor(i) === 'red' ? 'red' : 'black'}`;
-                cell.id = `num-${i}`; // ← ARREGLO CRÍTICO
+                cell.id = `num-${i}`;
                 cell.innerText = i;
                 cell.onclick = () => placeBet('number', i);
                 grid.appendChild(cell);
@@ -781,13 +993,8 @@
 
         function placeBet(type, value) {
             if (gameState.isSpinning) return;
-
-            // Calcular el monto de la apuesta (Lógica ALL IN)
             let betAmount = gameState.selectedChipValue;
-            if (betAmount === 'allin') {
-                betAmount = gameState.balance;
-            }
-
+            if (betAmount === 'allin') betAmount = gameState.balance;
             if (betAmount <= 0) return;
             if (gameState.balance < betAmount) return;
             
@@ -806,9 +1013,10 @@
             if(existing) existing.remove();
 
             const chip = document.createElement('div');
-            chip.className = 'chip-marker';
+            chip.className = 'chip-marker new-chip';
             chip.innerText = gameState.currentBets[key].amount;
             target.appendChild(chip);
+            playChipSound();
         }
 
         function drawWheel() {
@@ -829,6 +1037,14 @@
 
         function spinWheel() {
             if (gameState.isSpinning || Object.keys(gameState.currentBets).length === 0) return;
+            
+            // Bot Bonus Logic
+            const hasBot = gameState.activeCards.find(c => c.type === 'perm_bot');
+            if (hasBot) {
+                gameState.balance += 200;
+                showToast("EL BOT: +200 FICHAS", "warning");
+            }
+
             gameState.isSpinning = true;
             document.getElementById('spin-btn').disabled = true;
             document.getElementById('display-result').innerText = "?";
@@ -860,11 +1076,14 @@
             let winningNum = gameState.wheelNumbers[Math.floor(angle/arc)];
             let originalNum = winningNum;
             let winColor = getColor(winningNum);
-            let resultWasModified = false;
+
+            // --- Check Permanent Emperor ---
+            const hasEmperor = gameState.activeCards.find(c => c.type === 'perm_emp');
+            let permanentGlobalMult = hasEmperor ? 3 : 1;
 
             const hasNoZero = gameState.activeCards.some(c => c.type === 'no_zero');
             if (hasNoZero && winningNum === 0) {
-                winningNum = 1; winColor = 'red'; resultWasModified = true;
+                winningNum = 1; winColor = 'red';
             }
 
             let forcedColor = null;
@@ -878,7 +1097,6 @@
                 const arr = forcedColor === 'red' ? colors.red : colors.black;
                 winningNum = arr[Math.floor(Math.random() * arr.length)];
                 winColor = forcedColor;
-                resultWasModified = true;
                 effectText.innerText = `IMÁN ${forcedColor.toUpperCase()} ACTIVO`;
                 effectText.style.color = forcedColor === 'red' ? '#e74c3c' : '#2c3e50';
                 effectText.style.opacity = 1;
@@ -894,21 +1112,37 @@
             let numberPayout = 35;
             let globalMult = 1;
 
+            Object.values(gameState.currentBets).forEach(bet => {
+                totalBetSum += bet.amount;
+            });
+
             gameState.activeCards.forEach(card => {
                 let active = false;
+                // Permanentes no se marcan como usadas aquí
+                if (card.permanent) return; 
+
                 if (card.type === 'mult') {
                     if (card.condition === 'any') active = true;
                     else if (card.condition === 'red' && winColor === 'red') active = true;
                     else if (card.condition === 'black' && winColor === 'black') active = true;
-                    else if (card.condition === 'zero' && originalNum === 0) active = true;
                     if (active) { globalMult *= card.mult; usedCards.push(card.name); }
                 }
+                if (card.type === 'buffalo' && totalWin > 0) {
+                    const bonus = Math.floor(totalBetSum / 100);
+                    if (bonus >= 1) { globalMult *= bonus; usedCards.push(card.name); showToast(`BÚFALO: +x${bonus}!`, "info"); }
+                }
+                if (card.type === 'high_roller' && totalWin > 0 && totalBetSum >= 500) { globalMult *= 4; usedCards.push(card.name); }
+                if (card.type === 'even' && totalWin > 0 && (winningNum !== 0 && winningNum % 2 === 0)) { globalMult *= 4; usedCards.push(card.name); }
+                if (card.type === 'lucky_7' && totalWin > 0 && winningNum.toString().includes('7')) { globalMult *= 10; usedCards.push(card.name); showToast("¡SIE7E!", "success"); }
+                if (card.type === 'dozens' && totalWin > 0 && winningNum >= 1 && winningNum <= 12) { globalMult *= 3; usedCards.push(card.name); }
                 if (card.type === 'super_color' && (winColor === 'red' || winColor === 'black')) { colorMult = 3; usedCards.push(card.name); }
                 if (card.type === 'high_payout' && winColor !== 'green') { numberPayout = 50; usedCards.push(card.name); }
             });
 
+            // Aplicar multiplicador permanente
+            globalMult *= permanentGlobalMult;
+
             Object.values(gameState.currentBets).forEach(bet => {
-                totalBetSum += bet.amount;
                 let won = false, mult = 0;
                 if (bet.type === 'number' && bet.value === winningNum) { won = true; mult = numberPayout; }
                 else if (bet.type === 'color' && bet.value === winColor) { won = true; mult = colorMult; }
@@ -920,16 +1154,30 @@
             
             if (totalWin > 0) {
                 gameState.balance += totalWin;
+                
+                const hasInterest = gameState.activeCards.find(c => c.type === 'interest');
+                if (hasInterest) {
+                    const interestAmount = Math.floor(gameState.balance * 0.10);
+                    if (interestAmount > 0) { gameState.balance += interestAmount; showToast(`INTERÉS: +${interestAmount}`, "warning"); usedCards.push('Interés Compuesto'); }
+                }
+                const hasChest = gameState.activeCards.find(c => c.type === 'chest');
+                if (hasChest) {
+                    const newCard = cardPool[Math.floor(Math.random() * cardPool.length)];
+                    gameState.activeCards.push(newCard);
+                    showToast(`COFRE: Ganaste ${newCard.name}`, "success");
+                    usedCards.push('El Cofre');
+                    setTimeout(() => renderActiveCards(), 1500); 
+                }
+
                 updateBalanceUI(); updateRoundUI();
                 setJimboEmotion('happy');
                 showToast(`¡GANASTE ${Math.floor(totalWin)}!`, "success");
-                gameState.activeCards = gameState.activeCards.filter(c => !usedCards.includes(c.name) && c.type !== 'insurance');
+                // Filtrar: No borrar permanentes ni items usados que no sean permanentes
+                gameState.activeCards = gameState.activeCards.filter(c => !usedCards.includes(c.name) && c.type !== 'insurance' && !c.permanent);
                 renderActiveCards();
                 checkRoundCompletion();
             } else {
-                // Lógica arreglada para La Duda
                 const hasDoubt = gameState.activeCards.some(c => c.type === 'risky');
-                
                 if (hasDoubt) {
                     const roll = Math.random();
                     if (roll > 0.5) {
@@ -939,7 +1187,7 @@
                         setJimboEmotion('neutral');
                         effectText.innerText = "¡LA DUDA FAVORECIO!";
                         effectText.style.color = "#e67e22"; effectText.style.opacity = 1;
-                        gameState.activeCards = gameState.activeCards.filter(c => c.type !== 'risky');
+                        gameState.activeCards = gameState.activeCards.filter(c => c.type !== 'risky' && !c.permanent);
                         renderActiveCards();
                         saveGame();
                         setTimeout(() => { document.querySelectorAll('.chip-marker').forEach(e => e.remove()); gameState.currentBets = {}; }, 3000);
@@ -947,11 +1195,10 @@
                     } else {
                         totalWin = 0;
                         effectText.innerText = "LA DUDA TE ENGAÑÓ"; effectText.style.color = "#c0392b"; effectText.style.opacity = 1;
-                        gameState.activeCards = gameState.activeCards.filter(c => c.type !== 'risky');
+                        gameState.activeCards = gameState.activeCards.filter(c => c.type !== 'risky' && !c.permanent);
                         renderActiveCards();
                     }
                 }
-
                 if (hasGhost && Math.random() < 0.2) {
                     totalWin = totalBetSum;
                     gameState.balance += totalWin;
@@ -960,7 +1207,7 @@
                     effectText.innerText = "¡EL FANTASMA TE SALVÓ!";
                     effectText.style.color = "#00d2ff"; effectText.style.opacity = 1;
                     showToast("¡FANTASMA ACTIVADO!", "warning");
-                    gameState.activeCards = gameState.activeCards.filter(c => c.type !== 'ghost');
+                    gameState.activeCards = gameState.activeCards.filter(c => c.type !== 'ghost' && !c.permanent);
                     renderActiveCards();
                 } else if (hasInsurance) {
                     totalWin = totalBetSum;
@@ -970,7 +1217,7 @@
                     effectText.innerText = "SEGURO ACTIVADO";
                     effectText.style.color = "#f39c12"; effectText.style.opacity = 1;
                     showToast(`¡SEGURO DEVUELTO!`, "warning");
-                    gameState.activeCards = gameState.activeCards.filter(c => c.type !== 'insurance');
+                    gameState.activeCards = gameState.activeCards.filter(c => c.type !== 'insurance' && !c.permanent);
                     renderActiveCards();
                 } else {
                     setJimboEmotion('sad');
@@ -983,7 +1230,6 @@
                 document.querySelectorAll('.chip-marker').forEach(e => e.remove());
                 gameState.currentBets = {};
             }, 3000);
-            
             saveGame();
         }
 
@@ -996,20 +1242,19 @@
             else { pupil.setAttribute('cy', '55'); lid.setAttribute('d', ''); }
         }
 
-        // Función faltante en el código original
         function updateBalanceUI() {
             document.getElementById('user-balance').innerText = gameState.balance.toLocaleString();
         }
 
         function loadInventory() {
-            const skin = gameState.inventory.find(i => i === 'vipSkin');
-            if (skin) document.body.classList.add('skin-vip');
-            
+            if (gameState.inventory.includes('vipSkin')) document.body.classList.add('skin-vip');
+            if (gameState.inventory.includes('neonSkin')) document.body.classList.add('skin-neon');
             const chip1k = document.getElementById('chip-1000');
             const chip10k = document.getElementById('chip-10000');
-            
+            const chip100k = document.getElementById('chip-100k');
             if (gameState.inventory.includes('goldChip') && chip1k) chip1k.style.display = 'flex';
             if (gameState.inventory.includes('holoChip') && chip10k) chip10k.style.display = 'flex';
+            if (gameState.inventory.includes('titanChip') && chip100k) chip100k.style.display = 'flex';
         }
 
         function showToast(text, type = "info", persist = false) {
@@ -1020,9 +1265,7 @@
             if (type === 'error') toast.style.borderLeftColor = '#e74c3c';
             if (type === 'success') toast.style.borderLeftColor = '#2ecc71';
             if (type === 'warning') toast.style.borderLeftColor = '#f39c12';
-            
             area.appendChild(toast);
-            
             if (!persist) {
                 setTimeout(() => {
                     toast.style.opacity = '0';
