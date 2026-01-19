@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Balatro Roulette - Slots Edition</title>
+    <title>Balatro Roulette - Multiplayer</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <!-- Librería para Multiplayer (PartySocket) -->
+    <script src="https://unpkg.com/partysocket/dist/browser.js"></script>
     <style>
         :root {
             --bg-color: #1a1a1a;
@@ -17,15 +19,12 @@
             --chat-bg: #0f0f0f;
         }
 
-        /* Skin VIP */
         body.skin-vip {
             --bg-color: #0d0d0d;
             --table-color: #1a1a2e;
             --accent-gold: #00d2ff;
             --chat-bg: #151515;
         }
-
-        /* Skin Neon */
         body.skin-neon {
             --bg-color: #000000;
             --table-color: #1a0b2e;
@@ -97,14 +96,14 @@
         }
         .btn-start-run:active { transform: translateY(4px); box-shadow: none; }
 
-        .btn-shop, .btn-slots, .btn-deck {
+        .btn-shop, .btn-slots, .btn-deck, .btn-multi {
             background: #e74c3c; border: none; padding: 5px 15px; border-radius: 5px;
             font-weight: bold; color: #fff; cursor: pointer; font-family: 'VT323', monospace; font-size: 1.2rem;
             box-shadow: 2px 2px 0px #000;
         }
         .btn-shop { background: var(--accent-gold); color: #000; }
-        .btn-slots { background: linear-gradient(135deg, #8e44ad, #3498db); } /* Botón Nuevo */
-        .btn-deck { background: #9b59b6; }
+        .btn-slots { background: linear-gradient(135deg, #8e44ad, #3498db); }
+        .btn-multi { background: #fff; color: #000; } /* Nuevo botón Multiplayer */
 
         .balance-box {
             background: #000; padding: 2px 10px; border: 2px solid var(--accent-gold);
@@ -215,8 +214,7 @@
         .balatro-card.blue { background: #a0c4ff; border-color: #0077b6; color: #0077b6; }
         .balatro-card.orange { background: #f0e68c; border-color: #daa520; color: #555; }
         .balatro-card.purple { background: #e0b0ff; border-color: #9b59b6; color: #555; }
-        .balatro-card.gold { background: linear-gradient(135deg, #ffd700, #fff); border-color: #d4af37; color: #000; font-weight: bold; } 
-        /* Estilo Permanente (Exclusivo Slots) */
+        .balatro-card.gold { background: linear-gradient(135deg, #ffd700, #fff); border-color: #d4af37; color: #000; font-weight: bold; }
         .balatro-card.legendary-perm {
             background: linear-gradient(135deg, #000, #8e44ad);
             border: 2px solid #ffd700;
@@ -250,12 +248,14 @@
         .btn-black { background-color: var(--accent-black); }
 
         .chip-marker {
-            position: absolute; width: 20px; height: 20px; background: var(--accent-gold);
-            color: #000; border-radius: 50%; font-size: 9px; display: flex;
+            position: absolute; width: 20px; height: 20px; border-radius: 50%; font-size: 9px; display: flex;
             justify-content: center; align-items: center; border: 1px dashed #fff;
             pointer-events: none; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
             transition: transform 0.1s;
+            color: #000;
         }
+        .chip-marker.my-chip { background: var(--accent-gold); }
+        .chip-marker.remote-chip { background: #3498db; border-color: #fff; }
 
         @keyframes chipDrop {
             0% { transform: scale(0.5) translateY(-30px); opacity: 0; }
@@ -299,21 +299,12 @@
         .btn-hard-reset:hover { transform: scale(1.1); background: #e74c3c; }
 
         /* --- Slot Machine Styles --- */
-        .slot-machine-container {
-            display: flex; gap: 20px; justify-content: center; margin: 30px 0;
-        }
+        .slot-machine-container { display: flex; gap: 20px; justify-content: center; margin: 30px 0; }
         .reel {
-            width: 100px; height: 120px;
-            background: #fff; border: 5px solid #333;
-            border-radius: 10px;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 4rem; color: #000;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            width: 100px; height: 120px; background: #fff; border: 5px solid #333;
+            border-radius: 10px; display: flex; justify-content: center; align-items: center;
+            font-size: 4rem; color: #000; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
             position: relative; overflow: hidden;
-        }
-        .reel-strip {
-            display: flex; flex-direction: column;
-            transition: transform 0.1s linear;
         }
         .slot-result { font-family: 'VT323'; font-size: 2rem; margin: 10px 0; color: #ffd700; text-align: center; min-height: 30px; }
 
@@ -322,8 +313,7 @@
         .panel-header { padding: 15px; background: #050505; font-size: 0.9rem; color: #888; border-bottom: 1px solid #333; font-family: 'VT323', monospace; text-transform: uppercase; letter-spacing: 1px; }
         
         .chat-log {
-            flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px;
-            font-size: 0.9rem;
+            flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;
         }
         .chat-msg { max-width: 90%; padding: 8px 12px; border-radius: 12px; line-height: 1.4; position: relative; animation: fadeIn 0.3s; }
         .chat-msg .sender-name { font-size: 0.7rem; font-weight: bold; margin-bottom: 3px; display: block; opacity: 0.8; }
@@ -333,6 +323,9 @@
         .msg-jimbo .sender-name { color: #9b59b6; }
         .msg-user { align-self: flex-end; background: rgba(52, 152, 219, 0.2); border: 1px solid rgba(52, 152, 219, 0.5); color: #dbeaff; text-align: right; border-bottom-right-radius: 2px; }
         .msg-user .sender-name { color: #3498db; }
+        .msg-remote { align-self: flex-start; background: rgba(46, 204, 113, 0.2); border: 1px solid rgba(46, 204, 113, 0.5); color: #dfffdf; text-align: left; border-bottom-left-radius: 2px; }
+        .msg-remote .sender-name { color: #2ecc71; }
+
         .typing-indicator { font-size: 0.7rem; color: #666; font-style: italic; margin-left: 10px; display: none; }
 
         .chat-input-area { padding: 10px; background: #050505; border-top: 1px solid #333; display: flex; gap: 5px; }
@@ -367,6 +360,11 @@
         .btn-buy { background: #fff; color: #000; border: none; padding: 8px; width: 100%; cursor: pointer; font-weight: bold; }
         .btn-buy:disabled { background: #444; color: #888; cursor: not-allowed; }
 
+        /* --- Multiplayer Styles --- */
+        .mp-input { background: #333; border: 1px solid #555; color: #fff; padding: 10px; font-size: 1.2rem; text-align: center; font-family: 'VT323'; width: 100%; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; }
+        .mp-id-display { font-family: 'VT323'; font-size: 2.5rem; color: #2ecc71; margin: 20px 0; border: 2px dashed #2ecc71; padding: 10px; user-select: text; }
+        .mp-status { margin-top: 10px; font-size: 0.9rem; color: #aaa; }
+
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity:1; transform: translateY(0); } }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -374,7 +372,6 @@
 
         #notification-area { position: fixed; top: 80px; right: 320px; display: flex; flex-direction: column; gap: 10px; z-index: 100; }
         .toast { background: #fff; color: #000; padding: 15px; border-radius: 5px; border-left: 5px solid #000; font-family: 'VT323', monospace; font-size: 1.2rem; box-shadow: 5px 5px 0 rgba(0,0,0,0.5); animation: slideIn 0.3s; }
-        .toast-auto { border-left-color: #e67e22; }
 
         @media (max-width: 900px) {
             main { flex-direction: column; }
@@ -397,6 +394,36 @@
                 <button class="btn-deck" style="font-size:1.5rem; padding:10px 30px;" onclick="buyRandomCard()">🎴 ROBAR CARTA (100₳)</button>
             </div>
             <div class="shop-grid" id="shop-container"></div>
+        </div>
+    </div>
+
+    <!-- Multiplayer Modal -->
+    <div class="modal-overlay" id="multiplayer-modal">
+        <div class="modal-content" style="background: #1a1a1a; border-color: #fff;">
+            <span style="position:absolute; right:20px; top:20px; cursor:pointer; font-size:2rem;" onclick="toggleMultiplayer()">&times;</span>
+            <h2 class="modal-title" style="color: #fff; font-size: 2.5rem;">MULTIJUGADOR</h2>
+            
+            <div id="mp-setup-area">
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color:#2ecc71; margin:0 0 10px 0;">1. CREAR SALA</h3>
+                    <p style="color:#aaa; font-size:0.9rem;">Genera un código y compartelo.</p>
+                    <button class="btn-modal-primary" style="background: #2ecc71;" onclick="createRoom()">CREAR SALA</button>
+                </div>
+                <div style="border-top: 1px solid #444; padding-top: 20px;">
+                    <h3 style="color:#3498db; margin:0 0 10px 0;">2. UNIRSE</h3>
+                    <input type="text" id="room-code-input" class="mp-input" placeholder="PON AQUÍ EL CÓDIGO">
+                    <button class="btn-modal-primary" style="background: #3498db;" onclick="joinRoom()">UNIRSE</button>
+                </div>
+            </div>
+
+            <div id="mp-active-area" style="display:none;">
+                <div style="color:#2ecc71; font-weight:bold;">SALA ACTIVA</div>
+                <div class="mp-id-display" id="display-room-id">---</div>
+                <div class="mp-status" id="mp-status-text">Esperando jugadores...</div>
+                <div style="margin-top:20px;">
+                    <button class="btn-modal-primary" style="background: #c0392b; font-size:1rem;" onclick="leaveRoom()">SALIR</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -466,6 +493,7 @@
 
             <button class="btn-start-run" onclick="startRun()">NUEVO RETO</button>
             <button class="btn-slots" onclick="toggleSlots()">TRAGAPERRAS</button>
+            <button class="btn-multi" onclick="toggleMultiplayer()">ONLINE</button>
             <button class="btn-shop" onclick="toggleShop()">TIENDA</button>
             <div class="balance-box">₳ <span id="user-balance">1000</span></div>
         </div>
@@ -554,7 +582,8 @@
         // --- Configuración y Estado ---
         const gameState = {
             balance: parseInt(localStorage.getItem('balatro_balance')) || 1000,
-            currentBets: {},
+            myBets: {}, // Mis apuestas
+            remoteBets: {}, // Apuestas de amigos { playerId: { bets... } }
             selectedChipValue: 10,
             isSpinning: false,
             rotation: 0,
@@ -567,6 +596,12 @@
             roundGoal: parseInt(localStorage.getItem('balatro_goal')) || 1500
         };
 
+        // --- Multiplayer State ---
+        let socket = null;
+        let myId = 'user_' + Math.random().toString(36).substr(2, 9);
+        let isHost = false;
+        let roomName = '';
+
         // --- Shop Items ---
         const shopItems = [
             { id: 'goldChip', name: 'Ficha Platino', price: 5000, desc: 'Desbloquea apuesta de 1000.', type: 'unlock', target: 'chip-1000' },
@@ -577,13 +612,11 @@
             { id: 'neonSkin', name: 'Skin Neon', price: 25000, desc: 'Colores brillantes y oscuros.', type: 'cosmetic', target: 'skin-neon' }
         ];
 
-        // --- Cartas Exclusivas Slots (Permanentes) ---
         const exclusiveCards = [
             { type: 'perm_emp', name: 'El Emperador', color: 'purple', desc: '¡PERMANENTE! Multiplicador x3 Global.', permanent: true },
             { type: 'perm_bot', name: 'El Bot', color: 'blue', desc: '¡PERMANENTE! +200 Fichas por giro.', permanent: true }
         ];
 
-        // --- Card Pool Normal ---
         const cardPool = [
             { type: 'mult', mult: 2, condition: 'red', name: 'x2 Rojo', color: 'red', desc: 'Duplica si gana Rojo.' },
             { type: 'mult', mult: 2, condition: 'black', name: 'x2 Negro', color: 'black', desc: 'Duplica si gana Negro.' },
@@ -615,7 +648,7 @@
         const progressBarFill = document.getElementById('progress-bar-fill');
         const effectText = document.getElementById('effect-text');
 
-        // --- Sistema de Audio ---
+        // --- Audio ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playChipSound() {
             if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -632,7 +665,6 @@
             osc.stop(audioCtx.currentTime + 0.06);
         }
 
-        // --- Inicialización ---
         window.onload = () => {
             loadInventory();
             initBoard();
@@ -641,12 +673,6 @@
             updateBalanceUI();
             updateRoundUI();
             initChat();
-
-            setTimeout(() => { 
-                if(gameState.isRunMode) {
-                    if (gameState.balance >= gameState.roundGoal) autoAdvanceCheckOnLoad();
-                }
-            }, 1000);
         };
 
         function saveGame() {
@@ -685,10 +711,133 @@
             el.classList.add('selected');
         }
 
-        // --- SISTEMA DE CHAT ---
+        // --- MULTIPLAYER LOGIC ---
+        function toggleMultiplayer() { 
+            const modal = document.getElementById('multiplayer-modal'); 
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex'; 
+        }
+
+        function createRoom() {
+            const roomId = Math.random().toString(36).substr(2, 6).toUpperCase();
+            document.getElementById('mp-setup-area').style.display = 'none';
+            document.getElementById('mp-active-area').style.display = 'block';
+            document.getElementById('display-room-id').innerText = roomId;
+            document.getElementById('mp-status-text').innerText = "Esperando jugadores... (Eres el HOST)";
+            
+            isHost = true;
+            roomName = 'balatro-' + roomId;
+            
+            connectToRoom(roomName);
+            addChatMessage('dealer', "¡Sala creada! Dales el código: " + roomId);
+        }
+
+        function joinRoom() {
+            const code = document.getElementById('room-code-input').value.trim().toUpperCase();
+            if(!code) return;
+            
+            document.getElementById('mp-setup-area').style.display = 'none';
+            document.getElementById('mp-active-area').style.display = 'block';
+            document.getElementById('display-room-id').innerText = code;
+            document.getElementById('mp-status-text').innerText = "Conectando...";
+            
+            isHost = false;
+            roomName = 'balatro-' + code;
+            
+            connectToRoom(roomName);
+        }
+
+        function connectToRoom(room) {
+            // Usamos PartySocket para conectar sin backend propio
+            socket = new PartySocket({ host: 'demo.partykit.dev', room: room });
+
+            socket.onopen = () => {
+                console.log("Conectado a sala");
+                if(!isHost) addChatMessage('dealer', "Te has unido a la sala.");
+                else document.getElementById('mp-status-text').innerText = "Sala Activa";
+                
+                // Mensaje de bienvenida inicial
+                socket.send(JSON.stringify({ type: 'SYSTEM', id: myId, msg: 'join' }));
+            };
+
+            socket.onmessage = (e) => {
+                const data = JSON.parse(e.data);
+                handleNetworkMessage(data);
+            };
+        }
+
+        function leaveRoom() {
+            if(socket) socket.close();
+            socket = null;
+            isHost = false;
+            document.getElementById('mp-setup-area').style.display = 'block';
+            document.getElementById('mp-active-area').style.display = 'none';
+            document.getElementById('room-code-input').value = '';
+            // Limpiar apuestas remotas al salir
+            gameState.remoteBets = {};
+            renderBets();
+        }
+
+        function handleNetworkMessage(data) {
+            if (data.id === myId) return; // Ignorar mis propios mensajes
+
+            if (data.type === 'SYSTEM') {
+                if (data.msg === 'join') {
+                    addChatMessage('dealer', "Un nuevo jugador ha entrado.");
+                    if (isHost) {
+                        // Si soy host, envío el estado actual de la ruleta (si está girando o el resultado)
+                        // Para simplificar, solo retransmito cuando se hace algo
+                    }
+                }
+            } else if (data.type === 'CHAT') {
+                addRemoteChatMessage(data.msg);
+            } else if (data.type === 'BET') {
+                // Recibí una apuesta de otro
+                if (!gameState.remoteBets[data.id]) gameState.remoteBets[data.id] = {};
+                const key = `${data.betType}_${data.value}`;
+                if (!gameState.remoteBets[data.id][key]) gameState.remoteBets[data.id][key] = { type: data.betType, value: data.value, amount: 0 };
+                gameState.remoteBets[data.id][key].amount += data.amount;
+                
+                renderBets(); // Actualizar UI
+                playChipSound();
+                showToast("Jugador apostó", "info");
+            } else if (data.type === 'SPIN') {
+                // El host comenzó a girar
+                if (!isHost) {
+                    gameState.isSpinning = true;
+                    document.getElementById('spin-btn').disabled = true;
+                    document.getElementById('display-result').innerText = "?";
+                    gameState.speed = 0.4 + Math.random()*0.2; // Intentamos aprox velocidad visual
+                    animate();
+                    setJimboEmotion('neutral');
+                }
+            } else if (data.type === 'RESULT') {
+                // El host envió el resultado
+                if (!isHost) {
+                    // Sincronizar resultado
+                    // Una manera simple de sincronizar es forzar la parada
+                    // Como la animación es visual, dejamos que termine visualmente pero marcamos el resultado
+                    gameState.winningNum = data.num;
+                    gameState.winColor = data.color;
+                }
+            } else if (data.type === 'RESET_BETS') {
+                if (!isHost) {
+                    // Limpiar apuestas remotas
+                    gameState.remoteBets = {};
+                    renderBets();
+                }
+            }
+        }
+
+        function sendNetworkMessage(data) {
+            if (socket && socket.readyState === 1) {
+                socket.send(JSON.stringify(data));
+            }
+        }
+
+        // --- CHAT ---
         function initChat() {
             const chatLog = document.getElementById('chat-log');
-            addChatMessage('dealer', '¡Hola! Usa la ficha ALL para jugar todo lo que tienes.');
+            addChatMessage('dealer', '¡Hola! Usa el botón ONLINE para jugar con amigos.');
             setInterval(() => {
                 if(Math.random() > 0.8 && !gameState.isSpinning) {
                     const randomMsgs = [
@@ -715,11 +864,20 @@
             chatLog.appendChild(div);
             chatLog.scrollTop = chatLog.scrollHeight;
         }
+        function addRemoteChatMessage(text) {
+            const chatLog = document.getElementById('chat-log');
+            const div = document.createElement('div');
+            div.className = `chat-msg msg-remote`;
+            div.innerHTML = `<span class="sender-name">JUGADOR</span>${text}`;
+            chatLog.appendChild(div);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
         function sendMessage() {
             const input = document.getElementById('chat-input');
             const text = input.value.trim();
             if(!text) return;
             addChatMessage('user', text);
+            sendNetworkMessage({ type: 'CHAT', id: myId, msg: text }); // Enviar a sala
             input.value = '';
             processBotResponse(text.toLowerCase());
         }
@@ -740,7 +898,7 @@
             }, delay);
         }
 
-        // --- Lógica de Rondas ---
+        // --- Rondas ---
         function startRun() {
             if(gameState.isRunMode && !confirm("¿Reiniciar progreso de rondas?")) return;
             gameState.isRunMode = true;
@@ -811,7 +969,7 @@
         }
         function resetGame() { document.getElementById('gameover-modal').style.display = 'none'; startRun(); }
 
-        // --- Lógica de Cartas ---
+        // --- Cartas ---
         function buyRandomCard() {
             if (gameState.balance < 100) { showToast("¡Necesitas 100 fichas!", "error"); return; }
             gameState.balance -= 100;
@@ -845,10 +1003,8 @@
             if (gameState.activeCards.length === 0) { container.innerHTML = '<div style="color:#666; margin:auto; font-size:0.9rem; font-style:italic;">Sin cartas...</div>'; return; }
             gameState.activeCards.forEach((card, index) => {
                 const div = document.createElement('div');
-                // Clase especial para permanentes
                 let cardClass = `balatro-card ${card.color}`;
                 if (card.permanent) cardClass += " legendary-perm";
-                
                 div.className = cardClass;
                 div.innerHTML = `<div class="mult">${card.name}</div><div class="card-desc">${card.desc}</div>${card.permanent ? '' : `<div class="remove-card" onclick="removeCard(${index})">×</div>`}`;
                 container.appendChild(div);
@@ -880,16 +1036,14 @@
             } else { showToast("Saldo insuficiente", "error"); }
         }
 
-        // --- Lógica SLOTS (Tragaperras) ---
+        // --- Slots ---
         const slotSymbols = ['🍒', '🍋', '🍇', '💎', '👑', '🤖'];
-        
         function toggleSlots() { 
             const modal = document.getElementById('slots-modal'); 
             modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
             document.getElementById('slot-result-text').innerText = "";
             document.getElementById('slots-status').innerText = "";
         }
-
         function spinSlots() {
             if (gameState.activeCards.length === 0) {
                 document.getElementById('slots-status').innerText = "¡NECESITAS UNA CARTA PARA SACRIFICAR!";
@@ -899,8 +1053,6 @@
                 document.getElementById('slots-status').innerText = "¡SOLO PUEDES SACRIFICAR CARTAS NORMALES!";
                 return;
             }
-
-            // Sacrificar carta normal (prioridad a las últimas añadidas)
             let sacrificeIndex = -1;
             for (let i = gameState.activeCards.length - 1; i >= 0; i--) {
                 if (!gameState.activeCards[i].permanent) {
@@ -908,17 +1060,11 @@
                     break;
                 }
             }
-
-            if (sacrificeIndex === -1) return; // Seguridad extra
-
+            if (sacrificeIndex === -1) return;
             gameState.activeCards.splice(sacrificeIndex, 1);
             renderActiveCards();
-            
-            // Animación de slots
             const reels = [document.getElementById('reel-1'), document.getElementById('reel-2'), document.getElementById('reel-3')];
             let results = [];
-            
-            // Girar
             reels.forEach((reel, index) => {
                 let spins = 0;
                 let maxSpins = 10 + (index * 5);
@@ -938,24 +1084,19 @@
             document.getElementById('slots-status').innerText = "GIRANDO...";
             document.getElementById('slot-result-text').innerText = "";
         }
-
         function checkSlotWin(results) {
             document.getElementById('slots-status').innerText = "";
             const text = document.getElementById('slot-result-text');
-            
-            // Lógica de premios
             if (results[0] === results[1] && results[1] === results[2]) {
                 const symbol = results[0];
                 if (symbol === '🤖') {
-                    // Jackpot
                     text.innerText = "¡JACKPOT! +10,000 FICHAS + CARTA EXCLUSIVA";
                     gameState.balance += 10000;
-                    gameState.activeCards.push(exclusiveCards[1]); // El Bot
+                    gameState.activeCards.push(exclusiveCards[1]);
                 } else if (symbol === '👑') {
-                    // Legendaria
                     text.innerText = "¡PREMIO! +5,000 FICHAS + CARTA LEGENDARIA";
                     gameState.balance += 5000;
-                    gameState.activeCards.push(exclusiveCards[0]); // El Emperador
+                    gameState.activeCards.push(exclusiveCards[0]);
                 } else if (symbol === '💎') {
                     text.innerText = "¡DIAMANTES! +1000 FICHAS + CARTA ALEATORIA";
                     gameState.balance += 1000;
@@ -1001,22 +1142,68 @@
             gameState.balance -= betAmount;
             updateBalanceUI(); updateRoundUI();
 
+            // 1. Actualizar Mis Apuestas
             const key = `${type}_${value}`;
-            if (!gameState.currentBets[key]) gameState.currentBets[key] = { type, value, amount: 0 };
-            gameState.currentBets[key].amount += betAmount;
+            if (!gameState.myBets[key]) gameState.myBets[key] = { type, value, amount: 0 };
+            gameState.myBets[key].amount += betAmount;
 
+            // 2. Renderizar Mis Fichas
+            renderMyBets(key, type, value, gameState.myBets[key].amount);
+            playChipSound();
+
+            // 3. Enviar a Red
+            sendNetworkMessage({ type: 'BET', id: myId, betType: type, value: value, amount: gameState.myBets[key].amount });
+        }
+
+        function renderMyBets(key, type, value, amount) {
             const target = type === 'number' ? 
                 (value === 0 ? document.querySelector('.bet-cell.green') : document.getElementById(`num-${value}`)) :
                 (value === 'red' ? document.querySelector('.btn-red') : document.querySelector('.btn-black'));
 
-            const existing = target.querySelector('.chip-marker');
+            const existing = target.querySelector('.chip-marker.my-chip');
             if(existing) existing.remove();
 
             const chip = document.createElement('div');
-            chip.className = 'chip-marker new-chip';
-            chip.innerText = gameState.currentBets[key].amount;
+            chip.className = 'chip-marker my-chip new-chip';
+            chip.innerText = amount;
             target.appendChild(chip);
-            playChipSound();
+        }
+
+        function renderBets() {
+            // Renderizar apuestas remotas
+            // Para simplificar, dibujamos solo UNA ficha azul sumando todas las apuestas remotas en esa casilla
+            // Limpiamos las fichas azules primero
+            document.querySelectorAll('.chip-marker.remote-chip').forEach(e => e.remove());
+
+            // Agrupar apuestas remotas por casilla
+            const remoteTotals = {};
+            
+            Object.values(gameState.remoteBets).forEach(playerBets => {
+                Object.values(playerBets).forEach(bet => {
+                    const key = `${bet.type}_${bet.value}`;
+                    if(!remoteTotals[key]) remoteTotals[key] = 0;
+                    remoteTotals[key] += bet.amount;
+                });
+            });
+
+            // Dibujar
+            for (const [key, totalAmount] of Object.entries(remoteTotals)) {
+                const [type, value] = key.split('_'); // value es string
+                const numValue = isNaN(value) ? value : parseInt(value);
+                
+                const target = type === 'number' ? 
+                    (numValue === 0 ? document.querySelector('.bet-cell.green') : document.getElementById(`num-${numValue}`)) :
+                    (numValue === 'red' ? document.querySelector('.btn-red') : document.querySelector('.btn-black'));
+
+                // Evitar duplicados (si ya hay una azul de otro jugador, la actualizamos)
+                let chip = target.querySelector('.chip-marker.remote-chip');
+                if(!chip) {
+                    chip = document.createElement('div');
+                    chip.className = 'chip-marker remote-chip new-chip';
+                    target.appendChild(chip);
+                }
+                chip.innerText = totalAmount;
+            }
         }
 
         function drawWheel() {
@@ -1036,9 +1223,14 @@
         }
 
         function spinWheel() {
-            if (gameState.isSpinning || Object.keys(gameState.currentBets).length === 0) return;
+            // En multijugador, solo el HOST puede girar la ruleta para sincronizar el resultado
+            if (socket && !isHost) {
+                showToast("Solo el HOST puede girar la ruleta", "warning");
+                return;
+            }
+
+            if (gameState.isSpinning || (Object.keys(gameState.myBets).length === 0 && Object.keys(gameState.remoteBets).length === 0)) return;
             
-            // Bot Bonus Logic
             const hasBot = gameState.activeCards.find(c => c.type === 'perm_bot');
             if (hasBot) {
                 gameState.balance += 200;
@@ -1052,6 +1244,9 @@
             gameState.speed = 0.4 + Math.random()*0.2;
             animate();
             setJimboEmotion('neutral');
+
+            // Avisar a todos
+            sendNetworkMessage({ type: 'SPIN' });
         }
 
         function animate() {
@@ -1066,18 +1261,36 @@
         }
 
         function calculateResult() {
+            // Si soy Host, calculo el número
+            if (isHost) {
+                const arc = (2*Math.PI)/gameState.wheelNumbers.length;
+                let angle = 1.5*Math.PI - gameState.rotation;
+                while (angle < 0) angle += 2*Math.PI; while (angle >= 2*Math.PI) angle -= 2*Math.PI;
+                
+                let winningNum = gameState.wheelNumbers[Math.floor(angle/arc)];
+                
+                // Enviar resultado a todos
+                sendNetworkMessage({ 
+                    type: 'RESULT', 
+                    num: winningNum, 
+                    color: getColor(winningNum) 
+                });
+
+                processGameResult(winningNum, getColor(winningNum));
+            } else {
+                // Soy Guest, uso el resultado recibido (guardado en gameState.winningNum)
+                if (gameState.winningNum !== undefined) {
+                    processGameResult(gameState.winningNum, gameState.winColor);
+                }
+            }
+        }
+
+        function processGameResult(winningNum, winColor) {
             gameState.isSpinning = false;
             document.getElementById('spin-btn').disabled = false;
 
-            const arc = (2*Math.PI)/gameState.wheelNumbers.length;
-            let angle = 1.5*Math.PI - gameState.rotation;
-            while (angle < 0) angle += 2*Math.PI; while (angle >= 2*Math.PI) angle -= 2*Math.PI;
-            
-            let winningNum = gameState.wheelNumbers[Math.floor(angle/arc)];
             let originalNum = winningNum;
-            let winColor = getColor(winningNum);
 
-            // --- Check Permanent Emperor ---
             const hasEmperor = gameState.activeCards.find(c => c.type === 'perm_emp');
             let permanentGlobalMult = hasEmperor ? 3 : 1;
 
@@ -1112,15 +1325,12 @@
             let numberPayout = 35;
             let globalMult = 1;
 
-            Object.values(gameState.currentBets).forEach(bet => {
-                totalBetSum += bet.amount;
-            });
+            // Sumar mis apuestas
+            Object.values(gameState.myBets).forEach(bet => totalBetSum += bet.amount);
 
             gameState.activeCards.forEach(card => {
                 let active = false;
-                // Permanentes no se marcan como usadas aquí
                 if (card.permanent) return; 
-
                 if (card.type === 'mult') {
                     if (card.condition === 'any') active = true;
                     else if (card.condition === 'red' && winColor === 'red') active = true;
@@ -1139,10 +1349,9 @@
                 if (card.type === 'high_payout' && winColor !== 'green') { numberPayout = 50; usedCards.push(card.name); }
             });
 
-            // Aplicar multiplicador permanente
             globalMult *= permanentGlobalMult;
 
-            Object.values(gameState.currentBets).forEach(bet => {
+            Object.values(gameState.myBets).forEach(bet => {
                 let won = false, mult = 0;
                 if (bet.type === 'number' && bet.value === winningNum) { won = true; mult = numberPayout; }
                 else if (bet.type === 'color' && bet.value === winColor) { won = true; mult = colorMult; }
@@ -1172,7 +1381,6 @@
                 updateBalanceUI(); updateRoundUI();
                 setJimboEmotion('happy');
                 showToast(`¡GANASTE ${Math.floor(totalWin)}!`, "success");
-                // Filtrar: No borrar permanentes ni items usados que no sean permanentes
                 gameState.activeCards = gameState.activeCards.filter(c => !usedCards.includes(c.name) && c.type !== 'insurance' && !c.permanent);
                 renderActiveCards();
                 checkRoundCompletion();
@@ -1190,7 +1398,10 @@
                         gameState.activeCards = gameState.activeCards.filter(c => c.type !== 'risky' && !c.permanent);
                         renderActiveCards();
                         saveGame();
-                        setTimeout(() => { document.querySelectorAll('.chip-marker').forEach(e => e.remove()); gameState.currentBets = {}; }, 3000);
+                        setTimeout(() => { 
+                            cleanBets(); 
+                            if(isHost) sendNetworkMessage({ type: 'RESET_BETS' });
+                        }, 3000);
                         return;
                     } else {
                         totalWin = 0;
@@ -1227,10 +1438,16 @@
             }
 
             setTimeout(() => {
-                document.querySelectorAll('.chip-marker').forEach(e => e.remove());
-                gameState.currentBets = {};
+                cleanBets();
+                if(isHost) sendNetworkMessage({ type: 'RESET_BETS' });
             }, 3000);
             saveGame();
+        }
+
+        function cleanBets() {
+            document.querySelectorAll('.chip-marker').forEach(e => e.remove());
+            gameState.myBets = {};
+            gameState.remoteBets = {}; // Limpiamos las apuestas remotas de la mesa visualmente
         }
 
         // --- Utilidades ---
