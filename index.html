@@ -966,6 +966,12 @@
                 gameState.balance -= finalPrice;
                 gameState.inventory.push(id);
 
+                // CORRECCIÓN: SI ES EL PRESTAMISTA, DAR LAS FICHAS AHORA
+                if (id === 'loanShark') {
+                    gameState.balance += 2000;
+                    showToast("¡Préstamo recibido! +2000₳", "warning");
+                }
+
                 // Si es el Ojo, aumentar precio exorbitantemente (x3)
                 if (id === 'seerPower') {
                     gameState.seerPrice = Math.floor(gameState.seerPrice * 3);
