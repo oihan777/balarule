@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Balatro Roulette - Slots Edition</title>
+    <title>Balatro Roulette - Hard Reset</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -14,28 +14,16 @@
             --accent-red: #e74c3c;
             --accent-black: #2c3e50;
             --text-light: #ecf0f1;
-            --chat-bg: #0f0f0f;
+            --card-bg: #fff;
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
         }
 
-        /* Skin VIP */
         body.skin-vip {
             --bg-color: #0d0d0d;
             --table-color: #1a1a2e;
             --accent-gold: #00d2ff;
-            --chat-bg: #151515;
         }
-
-        /* Skin Neon */
-        body.skin-neon {
-            --bg-color: #000000;
-            --table-color: #1a0b2e;
-            --accent-gold: #ff00ff;
-            --accent-red: #00ffff;
-            --chat-bg: #050510;
-            --table-border: #4b0082;
-        }
-        .skin-neon .brand { text-shadow: 2px 2px 0px #00ffff; color: #ff00ff; }
-        .skin-neon .bet-cell { border: 1px solid #ff00ff; box-shadow: 0 0 5px #ff00ff; }
 
         * { box-sizing: border-box; user-select: none; }
         
@@ -74,7 +62,7 @@
         .mode-status { font-size: 0.8rem; color: #aaa; margin-top: 2px; }
         .mode-status span { color: var(--accent-gold); font-weight: bold; }
 
-        .header-controls { display: flex; gap: 15px; align-items: center; }
+        .header-controls { display: flex; gap: 10px; align-items: center; }
         
         .round-progress-container {
             display: none;
@@ -90,20 +78,14 @@
             height: 100%; background: linear-gradient(90deg, #e74c3c, #f1c40f); width: 0%; transition: width 0.5s ease-out;
         }
 
-        .btn-start-run {
-            background: linear-gradient(45deg, #2ecc71, #27ae60); border: none; padding: 5px 15px; border-radius: 5px;
-            font-weight: bold; color: #fff; cursor: pointer; font-family: 'VT323', monospace; font-size: 1.2rem;
-            box-shadow: 0 4px 0 #1e8449; transition: transform 0.1s;
+        .btn-start-run, .btn-shop, .btn-slot, .btn-deck {
+            border: none; padding: 5px 15px; border-radius: 5px;
+            font-weight: bold; color: #fff; cursor: pointer; font-family: 'VT323', monospace; font-size: 1.1rem;
+            box-shadow: 2px 2px 0px #000; transition: transform 0.1s;
         }
-        .btn-start-run:active { transform: translateY(4px); box-shadow: none; }
-
-        .btn-shop, .btn-slots, .btn-deck {
-            background: #e74c3c; border: none; padding: 5px 15px; border-radius: 5px;
-            font-weight: bold; color: #fff; cursor: pointer; font-family: 'VT323', monospace; font-size: 1.2rem;
-            box-shadow: 2px 2px 0px #000;
-        }
+        .btn-start-run { background: linear-gradient(45deg, #2ecc71, #27ae60); box-shadow: 0 4px 0 #1e8449; }
         .btn-shop { background: var(--accent-gold); color: #000; }
-        .btn-slots { background: linear-gradient(135deg, #8e44ad, #3498db); } /* Botón Nuevo */
+        .btn-slot { background: var(--neon-pink); animation: pulse 2s infinite; }
         .btn-deck { background: #9b59b6; }
 
         .balance-box {
@@ -166,10 +148,6 @@
             font-family: 'VT323', monospace; font-size: 4rem; line-height: 1;
             color: #fff; text-shadow: 0 0 10px #fff;
         }
-        .effect-indicator {
-            font-size: 0.8rem; color: #e67e22; font-weight: bold; text-transform: uppercase;
-            height: 15px; opacity: 0; transition: opacity 0.5s;
-        }
 
         .right-panel {
             flex: 1.5;
@@ -187,48 +165,64 @@
             background: rgba(0,0,0,0.5);
             padding: 10px;
             border-radius: 8px;
-            min-height: 120px;
+            min-height: 130px;
             display: flex;
-            gap: 10px;
+            gap: 15px;
             overflow-x: auto;
             border: 1px dashed #555;
+            align-items: center;
         }
         .balatro-card {
-            min-width: 80px;
-            height: 110px;
+            min-width: 90px;
+            height: 120px;
             background: #fff;
-            border-radius: 5px;
+            border-radius: 8px;
             border: 2px solid #333;
             color: #000;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             font-family: 'VT323', monospace;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             position: relative;
             box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
-            transition: transform 0.2s;
+            transition: all 0.5s ease-out;
+            padding: 5px;
+            flex-shrink: 0;
+            cursor: help;
         }
-        .balatro-card:hover { transform: translateY(-5px); }
+        .balatro-card.fading-out {
+            opacity: 0;
+            transform: scale(0.5) translateY(20px);
+            pointer-events: none;
+        }
+        
+        .balatro-card:hover { 
+            transform: scale(1.1) translateY(-5px); 
+            z-index: 100;
+            background-color: #f9f9f9;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+        .card-title { font-weight: bold; text-align: center; width: 100%; border-bottom: 1px solid #ccc; padding-bottom: 2px; font-size: 0.9rem;}
+        .card-mult { font-size: 1.5rem; font-weight: bold; margin: 5px 0; text-align: center; }
+        .card-effect { font-size: 0.7rem; text-align: center; line-height: 1.1; color: #333; font-family: 'Segoe UI', sans-serif; font-weight: bold; background: rgba(255,255,255,0.8); width: 100%; border-radius: 3px; padding: 2px;}
+        
         .balatro-card.red { background: #ffadad; border-color: #d90429; color: #d90429; }
         .balatro-card.blue { background: #a0c4ff; border-color: #0077b6; color: #0077b6; }
-        .balatro-card.orange { background: #f0e68c; border-color: #daa520; color: #555; }
-        .balatro-card.purple { background: #e0b0ff; border-color: #9b59b6; color: #555; }
-        .balatro-card.gold { background: linear-gradient(135deg, #ffd700, #fff); border-color: #d4af37; color: #000; font-weight: bold; } 
-        /* Estilo Permanente (Exclusivo Slots) */
-        .balatro-card.legendary-perm {
-            background: linear-gradient(135deg, #000, #8e44ad);
-            border: 2px solid #ffd700;
-            color: #ffd700;
-            box-shadow: 0 0 10px #ffd700;
+        .balatro-card.black { background: #333; border-color: #000; color: #fff; }
+        .balatro-card.gold { background: linear-gradient(135deg, #ffd700, #fff); border-color: #d4ac0d; color: #000; font-weight: bold; border-width: 3px; }
+        .balatro-card.legendary { 
+            background: linear-gradient(135deg, #8e44ad, #000); 
+            border: 2px solid var(--neon-pink); 
+            color: var(--neon-pink);
+            box-shadow: 0 0 10px var(--neon-pink);
         }
-        .balatro-card.mult { font-size: 1.8rem; font-weight: bold; }
-        .card-desc { font-size: 0.6rem; text-align: center; padding: 2px; margin-top: 5px; }
+
         .remove-card {
-            position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white;
-            border-radius: 50%; width: 20px; height: 20px; display: flex; justify-content: center; align-items: center;
-            font-size: 12px; cursor: pointer; z-index: 10;
+            position: absolute; top: -8px; right: -8px; background: #c0392b; color: white;
+            border-radius: 50%; width: 22px; height: 22px; display: flex; justify-content: center; align-items: center;
+            font-size: 14px; cursor: pointer; z-index: 101; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
         .betting-board {
@@ -254,16 +248,25 @@
             color: #000; border-radius: 50%; font-size: 9px; display: flex;
             justify-content: center; align-items: center; border: 1px dashed #fff;
             pointer-events: none; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-            transition: transform 0.1s;
         }
 
-        @keyframes chipDrop {
-            0% { transform: scale(0.5) translateY(-30px); opacity: 0; }
-            60% { transform: scale(1.1) translateY(5px); opacity: 1; }
-            100% { transform: scale(1) translateY(0); opacity: 1; }
+        .powers-area {
+            background: rgba(0,0,0,0.4);
+            padding: 5px;
+            border-radius: 8px;
+            border: 1px solid var(--neon-blue);
+            margin-bottom: 5px;
         }
-        .chip-marker.new-chip {
-            animation: chipDrop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        .powers-title { font-family:'VT323'; color:var(--neon-blue); text-align:center; font-size:1rem; margin:0; }
+        .powers-list { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; min-height: 30px; }
+        .power-btn {
+            padding: 3px 8px; font-size: 0.8rem; border: 1px solid var(--neon-blue); background: transparent;
+            color: var(--neon-blue); cursor: pointer; border-radius: 4px;
+        }
+        .power-btn:hover:not(:disabled) { background: var(--neon-blue); color: #000; }
+        .prediction-display {
+            font-family: 'VT323'; font-size: 1.2rem; color: var(--neon-pink); text-shadow: 0 0 5px var(--neon-pink);
+            text-align: center; height: 25px; opacity: 0; transition: opacity 0.3s;
         }
 
         .controls-area { margin-top: auto; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; }
@@ -279,66 +282,28 @@
         .chip-100 { background: #e74c3c; }
         .chip-500 { background: #2c3e50; color: #ffd700; border-color: #ffd700; }
         .chip-1000 { background: linear-gradient(135deg, #f1c40f, #fff); color: #000; display: none; }
-        .chip-10000 { background: linear-gradient(135deg, #8e44ad, #fff); color: #fff; display: none; border-color: #fff; }
-        .chip-100k { background: linear-gradient(135deg, #000, #434343); color: #fff; border: 3px solid #e74c3c; font-size: 0.7rem; display: none; }
-        .chip-100k.selected { box-shadow: 0 0 15px #e74c3c; transform: scale(1.2); }
-        .chip-allin { background: linear-gradient(135deg, #e74c3c, #2c3e50); color: #fff; border-color: #ffd700; font-weight: 900; font-size: 0.9rem; box-shadow: 0 0 5px var(--accent-gold); }
+        .chip-allin {
+            background: linear-gradient(135deg, #e74c3c 50%, #2c3e50 50%);
+            color: white;
+            border: 3px solid #ffd700;
+            font-size: 0.7rem;
+            font-weight: 900;
+            line-height: 1;
+        }
 
-        .actions { display: flex; justify-content: center; margin-top: 10px; }
-        .btn-spin { background: var(--accent-gold); color: #000; padding: 10px 60px; font-family: 'VT323', monospace; font-size: 1.5rem; border: none; border-radius: 5px; cursor: pointer; }
+        .actions { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+        .btn-spin { background: var(--accent-gold); color: #000; padding: 10px 40px; font-family: 'VT323', monospace; font-size: 1.5rem; border: none; border-radius: 5px; cursor: pointer; }
         .btn-spin:disabled { background: #555; color: #888; cursor: not-allowed; }
 
-        .btn-hard-reset {
-            position: fixed; bottom: 20px; left: 20px;
-            background: #c0392b; color: white; border: 2px solid #fff;
-            padding: 10px 20px; border-radius: 8px; cursor: pointer;
-            font-family: 'VT323', monospace; font-size: 1.2rem;
-            z-index: 9999; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            transition: transform 0.2s;
-        }
-        .btn-hard-reset:hover { transform: scale(1.1); background: #e74c3c; }
-
-        /* --- Slot Machine Styles --- */
-        .slot-machine-container {
-            display: flex; gap: 20px; justify-content: center; margin: 30px 0;
-        }
-        .reel {
-            width: 100px; height: 120px;
-            background: #fff; border: 5px solid #333;
-            border-radius: 10px;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 4rem; color: #000;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
-            position: relative; overflow: hidden;
-        }
-        .reel-strip {
-            display: flex; flex-direction: column;
-            transition: transform 0.1s linear;
-        }
-        .slot-result { font-family: 'VT323'; font-size: 2rem; margin: 10px 0; color: #ffd700; text-align: center; min-height: 30px; }
-
-        /* --- Sidebar (Chat) --- */
-        aside { width: 280px; background: var(--chat-bg); border-left: 2px solid #333; display: flex; flex-direction: column; }
-        .panel-header { padding: 15px; background: #050505; font-size: 0.9rem; color: #888; border-bottom: 1px solid #333; font-family: 'VT323', monospace; text-transform: uppercase; letter-spacing: 1px; }
-        
-        .chat-log {
-            flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px;
-            font-size: 0.9rem;
-        }
-        .chat-msg { max-width: 90%; padding: 8px 12px; border-radius: 12px; line-height: 1.4; position: relative; animation: fadeIn 0.3s; }
-        .chat-msg .sender-name { font-size: 0.7rem; font-weight: bold; margin-bottom: 3px; display: block; opacity: 0.8; }
-        .msg-dealer { align-self: flex-start; background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.3); color: #ffcccc; border-bottom-left-radius: 2px; }
-        .msg-dealer .sender-name { color: var(--accent-red); }
-        .msg-jimbo { align-self: flex-start; background: rgba(155, 89, 182, 0.15); border: 1px solid rgba(155, 89, 182, 0.3); color: #e0b0ff; border-bottom-left-radius: 2px; }
-        .msg-jimbo .sender-name { color: #9b59b6; }
-        .msg-user { align-self: flex-end; background: rgba(52, 152, 219, 0.2); border: 1px solid rgba(52, 152, 219, 0.5); color: #dbeaff; text-align: right; border-bottom-right-radius: 2px; }
-        .msg-user .sender-name { color: #3498db; }
-        .typing-indicator { font-size: 0.7rem; color: #666; font-style: italic; margin-left: 10px; display: none; }
-
-        .chat-input-area { padding: 10px; background: #050505; border-top: 1px solid #333; display: flex; gap: 5px; }
-        .chat-input { flex: 1; background: #222; border: 1px solid #444; color: #fff; border-radius: 4px; padding: 8px; font-family: 'Segoe UI', sans-serif; font-size: 0.9rem; outline: none; }
-        .chat-input:focus { border-color: var(--accent-gold); }
-        .btn-send { background: var(--accent-gold); border: none; color: #000; border-radius: 4px; padding: 0 12px; cursor: pointer; font-weight: bold; }
+        /* --- Aside --- */
+        aside { width: 220px; background: #151515; border-left: 2px solid #333; display: flex; flex-direction: column; }
+        .panel-header { padding: 10px; background: #0f0f0f; font-size: 0.8rem; color: #666; border-bottom: 1px solid #333; font-family: 'VT323', monospace; text-transform: uppercase; }
+        .game-log { flex: 1; overflow-y: auto; padding: 10px; font-size: 0.8rem; font-family: 'VT323', monospace; }
+        .log-entry { margin-bottom: 6px; color: #aaa; }
+        .log-dealer { color: #ffadad; }
+        .log-jimbo { color: #bd93f9; }
+        .log-system { color: #f1c40f; }
+        .log-slot { color: var(--neon-pink); }
 
         /* --- Modals --- */
         .modal-overlay {
@@ -347,42 +312,61 @@
             display: none; justify-content: center; align-items: center;
         }
         .modal-content {
-            background: #222; width: 90%; max-width: 500px;
+            background: #222; width: 90%; max-width: 900px;
             border-radius: 10px; border: 4px solid #fff;
             padding: 30px; position: relative; text-align: center;
             background-image: radial-gradient(#333 10%, transparent 10%); background-size: 20px 20px;
+            max-height: 90vh; overflow-y: auto;
         }
         .modal-title { font-family: 'VT323'; font-size: 3rem; margin: 0; color: var(--accent-gold); text-transform: uppercase; }
-        .modal-msg { font-size: 1.2rem; color: #fff; margin: 20px 0; }
-        .btn-modal-primary {
-            background: #e74c3c; color: white; border: none; padding: 10px 30px;
-            font-size: 1.5rem; font-family: 'VT323'; cursor: pointer;
-            box-shadow: 0 4px 0 #922b21;
-        }
-        .btn-modal-primary:active { transform: translateY(4px); box-shadow: none; }
-
-        .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
-        .shop-item { background: rgba(0,0,0,0.7); border: 2px solid #555; padding: 10px; text-align: center; border-radius: 8px; }
+        
+        .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 20px;}
+        .shop-item { background: rgba(0,0,0,0.7); border: 2px solid #555; padding: 10px; text-align: center; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between;}
+        .shop-item.passive { border-color: #9b59b6; }
+        .shop-item.active { border-color: var(--neon-blue); }
         .item-price { color: var(--accent-gold); font-size: 1.2rem; margin: 10px 0; font-family: 'VT323', monospace; }
         .btn-buy { background: #fff; color: #000; border: none; padding: 8px; width: 100%; cursor: pointer; font-weight: bold; }
-        .btn-buy:disabled { background: #444; color: #888; cursor: not-allowed; }
 
+        /* --- Slot Machine Specific --- */
+        .slot-container {
+            background: #222;
+            border: 8px solid #d4ac0d;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 500px;
+            margin: 0 auto;
+            box-shadow: 0 0 50px rgba(212, 172, 13, 0.3);
+        }
+        .slot-reels { display: flex; gap: 10px; background: #000; padding: 10px; border-radius: 5px; margin-bottom: 20px; }
+        .reel { width: 80px; height: 100px; background: #fff; display: flex; justify-content: center; align-items: center; font-size: 3rem; border: 2px solid #ccc; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+        .slot-info { color: #aaa; font-size: 1rem; margin-bottom: 15px; font-family: 'VT323'; }
+        .slot-cost { color: #e74c3c; font-weight: bold; }
+        .btn-slot-spin {
+            background: linear-gradient(to bottom, #e74c3c, #c0392b);
+            color: white; border: none; padding: 15px 40px; font-family: 'VT323'; font-size: 2rem;
+            border-radius: 50px; cursor: pointer; box-shadow: 0 5px 0 #922b21; border: 2px solid #fff; transition: 0.1s;
+        }
+        .btn-slot-spin:active { transform: translateY(5px); box-shadow: none; }
+        .btn-slot-spin:disabled { background: #555; box-shadow: none; cursor: not-allowed; transform: translateY(5px); }
+        .slot-legend { margin-top: 20px; font-size: 0.8rem; color: #888; text-align: left; width: 100%;}
+
+        /* --- Animaciones --- */
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity:1; transform: translateY(0); } }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px) rotate(-5deg); } 75% { transform: translateX(5px) rotate(5deg); } 100% { transform: translateX(0); } }
-
-        #notification-area { position: fixed; top: 80px; right: 320px; display: flex; flex-direction: column; gap: 10px; z-index: 100; }
+        @keyframes pulse { 0% { transform: scale(1); box-shadow: 2px 2px 0px #000; } 50% { transform: scale(1.05); box-shadow: 2px 2px 0px #555; } 100% { transform: scale(1); box-shadow: 2px 2px 0px #000; } }
+        
+        #notification-area { position: fixed; top: 80px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 100; }
         .toast { background: #fff; color: #000; padding: 15px; border-radius: 5px; border-left: 5px solid #000; font-family: 'VT323', monospace; font-size: 1.2rem; box-shadow: 5px 5px 0 rgba(0,0,0,0.5); animation: slideIn 0.3s; }
-        .toast-auto { border-left-color: #e67e22; }
 
         @media (max-width: 900px) {
             main { flex-direction: column; }
             .jimbo-container { display: none; }
-            aside { width: 100%; height: 200px; order: 3; }
+            aside { display: none; }
             .header-controls { flex-direction: column; gap: 5px; }
-            #notification-area { right: 20px; }
-            .btn-hard-reset { padding: 5px 10px; font-size: 1rem; }
+            .btn-slot { display: none; }
         }
     </style>
 </head>
@@ -390,36 +374,40 @@
 
     <!-- Shop Modal -->
     <div class="modal-overlay" id="shop-modal">
-        <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-content" style="max-width: 900px;">
             <span style="position:absolute; right:20px; top:20px; cursor:pointer; font-size:2rem;" onclick="toggleShop()">&times;</span>
-            <h2 class="modal-title" style="font-size:2rem;">TIENDA & MAZO</h2>
+            <h2 class="modal-title" style="font-size:2rem; color: var(--neon-blue);">TIENDA & MAZO</h2>
             <div style="text-align:center; margin-bottom:20px;">
-                <button class="btn-deck" style="font-size:1.5rem; padding:10px 30px;" onclick="buyRandomCard()">🎴 ROBAR CARTA (100₳)</button>
+                <button class="btn-deck" style="font-size:1.5rem; padding:10px 30px; display:inline-block;" onclick="buyRandomCard()">🎴 ROBAR CARTA (150₳)</button>
             </div>
+            <h3 style="color:#aaa; font-family:'VT323'">OBJETOS ESPECIALES</h3>
             <div class="shop-grid" id="shop-container"></div>
         </div>
     </div>
 
-    <!-- Slots Modal -->
-    <div class="modal-overlay" id="slots-modal">
-        <div class="modal-content" style="background: #1a1a1a; border: 4px solid #8e44ad;">
-            <span style="position:absolute; right:20px; top:20px; cursor:pointer; font-size:2rem;" onclick="toggleSlots()">&times;</span>
-            <h2 class="modal-title" style="color: #8e44ad; text-shadow: 0 0 10px #8e44ad;">SLOTS</h2>
-            <div style="font-size: 1.2rem; color: #ccc; margin-bottom: 10px;">SACRIFICIA 1 CARTA PARA GIRAR</div>
-            <div id="slots-status" style="color: #e74c3c; height: 20px; font-weight: bold;"></div>
-            
-            <div class="slot-machine-container">
-                <div class="reel" id="reel-1"><div style="font-size: 3rem;">🍒</div></div>
-                <div class="reel" id="reel-2"><div style="font-size: 3rem;">🍒</div></div>
-                <div class="reel" id="reel-3"><div style="font-size: 3rem;">🍒</div></div>
-            </div>
-            
-            <div id="slot-result-text" class="slot-result"></div>
-
-            <button class="btn-modal-primary" style="background: #8e44ad; margin-top: 20px;" onclick="spinSlots()">GIRAR</button>
-            <div style="margin-top: 15px; font-size: 0.8rem; color: #777;">
-                3 👑 = CARTA LEGENDARIA<br>
-                3 🤖 = JACKPOT + CARTA
+    <!-- Slot Machine Modal -->
+    <div class="modal-overlay" id="slot-modal">
+        <div class="modal-content" style="background: #1a1a1a;">
+            <span style="position:absolute; right:20px; top:20px; cursor:pointer; font-size:2rem; color:#fff;" onclick="toggleSlot()">&times;</span>
+            <h2 class="modal-title" style="color:var(--accent-gold); text-shadow: 2px 2px 0px #e74c3c;">TRAGAPERRAS</h2>
+            <div class="slot-container">
+                <div class="slot-info">
+                    COSTE: <span class="slot-cost">1 CARTA ALEATORIA DE TU MANO</span>
+                </div>
+                <div class="slot-reels">
+                    <div class="reel" id="reel1">🍒</div>
+                    <div class="reel" id="reel2">🍒</div>
+                    <div class="reel" id="reel3">🍒</div>
+                </div>
+                <button class="btn-slot-spin" id="btn-slot-action" onclick="playSlotMachine()">JUGAR</button>
+                <div class="slot-legend">
+                    <strong>PREMIOS:</strong><br>
+                    🍒🍒🍒 = +500 Fichas<br>
+                    🍋🍋🍋 = +1000 Fichas<br>
+                    💎💎💎 = +3000 Fichas<br>
+                    👹👹👹 = Carta Muy Poderosa<br>
+                    🃏🃏🃏 = CARTA LEGENDARIA (Exclusiva)
+                </div>
             </div>
         </div>
     </div>
@@ -441,8 +429,8 @@
         <div class="modal-content" style="border-color:#e74c3c;">
             <h2 class="modal-title" style="color:#e74c3c;">GAME OVER</h2>
             <div class="modal-msg">
-                Te has quedado sin fichas.<br>
-                El casino siempre gana...
+                Te has quedado sin fichas en la ronda <span id="final-round">1</span>.<br>
+                Tus cartas se han desvanecido en el vacío.
             </div>
             <button class="btn-modal-primary" onclick="resetGame()">REINTENTAR</button>
         </div>
@@ -450,7 +438,7 @@
 
     <header>
         <div class="header-left">
-            <div class="brand">BALATRO <span style="color:#e74c3c">ROULETTE</span></div>
+            <div class="brand">BALATRO <span style="color:var(--neon-pink)">CHAOS</span></div>
             <div class="mode-status" id="mode-status">MODO: <span>LIBRE</span></div>
         </div>
         <div class="header-controls">
@@ -465,8 +453,8 @@
             </div>
 
             <button class="btn-start-run" onclick="startRun()">NUEVO RETO</button>
-            <button class="btn-slots" onclick="toggleSlots()">TRAGAPERRAS</button>
             <button class="btn-shop" onclick="toggleShop()">TIENDA</button>
+            <button class="btn-slot" onclick="toggleSlot()">TRAGAPERRAS</button>
             <div class="balance-box">₳ <span id="user-balance">1000</span></div>
         </div>
     </header>
@@ -474,14 +462,13 @@
     <main>
         <section class="left-panel">
             <div class="dealer-container">
-                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=AnimeDealer" class="dealer-img" alt="Dealer">
+                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=AnimeDealer&backgroundColor=transparent" class="dealer-img" alt="Dealer">
             </div>
 
             <canvas id="rouletteCanvas" width="300" height="300"></canvas>
 
             <div class="result-display">
                 <div class="result-number" id="display-result">-</div>
-                <div id="effect-text" class="effect-indicator">Efecto Activo</div>
                 <div style="font-size:0.8rem; color:#aaa;">MULTIPLICADOR: <span id="total-mult-display" style="color:#e74c3c">x1</span></div>
             </div>
 
@@ -499,14 +486,19 @@
 
         <section class="right-panel">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-family:'VT323'; font-size:1.2rem; color:#fff;">CARTAS EN MANO</span>
-                <div style="display:flex; gap:10px;">
-                    <button onclick="rerollCards()" style="background:#9b59b6; border:none; color:#fff; padding:2px 8px; border-radius:4px; cursor:pointer; font-size:0.8rem; box-shadow:1px 1px 0 #000;">REBARAJAR (50)</button>
-                    <button onclick="clearCards()" style="background:none; border:none; color:#e74c3c; cursor:pointer; font-size:0.8rem;">Descartar</button>
-                </div>
+                <span style="font-family:'VT323'; font-size:1.2rem; color:#fff;">CARTAS EN MANO (CONSUMIBLES)</span>
+                <button onclick="clearCards()" style="background:none; border:none; color:#e74c3c; cursor:pointer; font-size:0.8rem;">Descartar Todo</button>
             </div>
             <div class="active-cards-section" id="active-cards">
-                <div style="color:#666; margin:auto; font-size:0.9rem; font-style:italic;">Sin cartas...</div>
+                <div style="color:#666; margin:auto; font-size:0.9rem; font-style:italic;">Sin cartas... ¡Ve a la tienda!</div>
+            </div>
+
+            <div class="powers-area">
+                <h4 class="powers-title">PODERES ESPECIALES</h4>
+                <div class="powers-list" id="powers-list">
+                    <span style="color:#555; font-size:0.8rem; font-family:'VT323'">Sin poderes activos...</span>
+                </div>
+                <div id="prediction-box" class="prediction-display"></div>
             </div>
 
             <div class="betting-board" id="numbers-grid">
@@ -525,9 +517,8 @@
                     <div class="chip chip-100" onclick="selectChip(100, this)">100</div>
                     <div class="chip chip-500" onclick="selectChip(500, this)">500</div>
                     <div class="chip chip-1000" id="chip-1000" onclick="selectChip(1000, this)">1K</div>
-                    <div class="chip chip-10000" id="chip-10000" onclick="selectChip(10000, this)">10K</div>
-                    <div class="chip chip-100k" id="chip-100k" onclick="selectChip(100000, this)">100K</div>
-                    <div class="chip chip-allin" onclick="selectChip('allin', this)">ALL</div>
+                    <!-- NUEVA FICHA ALL IN -->
+                    <div class="chip chip-allin" onclick="selectChip('all_in', this)">ALL<br>IN</div>
                 </div>
                 <div class="actions">
                     <button class="btn-spin" id="spin-btn" onclick="spinWheel()">JUGAR</button>
@@ -536,17 +527,10 @@
         </section>
 
         <aside>
-            <div class="panel-header">Chat Sala Privada</div>
-            <div class="chat-log" id="chat-log"></div>
-            <div class="typing-indicator" id="typing-indicator">Alguien está escribiendo...</div>
-            <div class="chat-input-area">
-                <input type="text" id="chat-input" class="chat-input" placeholder="Escribe un mensaje..." onkeypress="handleEnter(event)">
-                <button class="btn-send" onclick="sendMessage()">➤</button>
-            </div>
+            <div class="panel-header">Sala de Chat</div>
+            <div class="game-log" id="game-log"></div>
         </aside>
     </main>
-
-    <button class="btn-hard-reset" onclick="hardReset()">☠️ RESET TOTAL</button>
 
     <div id="notification-area"></div>
 
@@ -564,46 +548,40 @@
             inventory: JSON.parse(localStorage.getItem('balatro_inventory')) || [],
             isRunMode: JSON.parse(localStorage.getItem('balatro_isRun')) || false,
             currentRound: parseInt(localStorage.getItem('balatro_round')) || 1,
-            roundGoal: parseInt(localStorage.getItem('balatro_goal')) || 1500
+            roundGoal: parseInt(localStorage.getItem('balatro_goal')) || 1500,
+            predeterminedResult: null,
+            seerPrice: parseInt(localStorage.getItem('balatro_seerPrice')) || 5000 // Precio dinámico
         };
 
-        // --- Shop Items ---
+        // --- Objetos de Tienda ---
         const shopItems = [
             { id: 'goldChip', name: 'Ficha Platino', price: 5000, desc: 'Desbloquea apuesta de 1000.', type: 'unlock', target: 'chip-1000' },
-            { id: 'holoChip', name: 'Ficha Holográfica', price: 50000, desc: 'Desbloquea apuesta de 10000.', type: 'unlock', target: 'chip-10000' },
-            { id: 'titanChip', name: 'Ficha Titán', price: 200000, desc: 'Desbloquea apuesta de 100,000.', type: 'unlock', target: 'chip-100k' },
             { id: 'lifeInsurance', name: 'Seguro de Vida', price: 2000, desc: 'Salva de la bancarrota (+500).', type: 'passive' },
             { id: 'vipSkin', name: 'Skin Cyberpunk', price: 10000, desc: 'Cambia el tema visual.', type: 'cosmetic', target: 'skin-vip' },
-            { id: 'neonSkin', name: 'Skin Neon', price: 25000, desc: 'Colores brillantes y oscuros.', type: 'cosmetic', target: 'skin-neon' }
+            { id: 'seerPower', name: 'Ojo de la Mente', price: 5000, desc: 'Vé el número ganador (1 solo uso).', type: 'active', cooldown: 0 },
+            { id: 'loanShark', name: 'Prestamista', price: 0, desc: 'Consigue 2000 fichas ya, pero pierde 100/5s.', type: 'passive_debt' },
+            { id: 'cryptoMiner', name: 'Minero Cripto', price: 8000, desc: 'Gana +50 fichas pasivamente cada 10s.', type: 'passive_income' }
         ];
 
-        // --- Cartas Exclusivas Slots (Permanentes) ---
-        const exclusiveCards = [
-            { type: 'perm_emp', name: 'El Emperador', color: 'purple', desc: '¡PERMANENTE! Multiplicador x3 Global.', permanent: true },
-            { type: 'perm_bot', name: 'El Bot', color: 'blue', desc: '¡PERMANENTE! +200 Fichas por giro.', permanent: true }
-        ];
-
-        // --- Card Pool Normal ---
+        // --- Cartas ---
         const cardPool = [
-            { type: 'mult', mult: 2, condition: 'red', name: 'x2 Rojo', color: 'red', desc: 'Duplica si gana Rojo.' },
-            { type: 'mult', mult: 2, condition: 'black', name: 'x2 Negro', color: 'black', desc: 'Duplica si gana Negro.' },
-            { type: 'mult', mult: 5, condition: 'any', name: 'x5 Global', color: 'blue', desc: 'Multiplica cualquier victoria x5.' },
-            { type: 'mult', mult: 10, condition: 'zero', name: 'Jackpot 0', color: 'red', desc: 'x10 si sale 0.' },
-            { type: 'force_red', name: 'Imán Rojo', color: 'red', desc: '¡Fuerza a que salga ROJO!', rarity: 'rare' },
-            { type: 'force_black', name: 'Imán Negro', color: 'black', desc: '¡Fuerza a que salga NEGRO!', rarity: 'rare' },
-            { type: 'no_zero', name: 'Trampa del 0', color: 'orange', desc: 'El 0 se convierte en ROJO.', rarity: 'rare' },
-            { type: 'insurance', name: 'Seguro de Apuesta', color: 'orange', desc: 'Recuperas tu apuesta si pierdes.', rarity: 'common' },
-            { type: 'interest', name: 'Interés Compuesto', color: 'green', desc: 'Ganas +10% de tu saldo actual al ganar.', rarity: 'rare' },
-            { type: 'buffalo', name: 'El Búfalo', color: 'orange', desc: '+x1 Mult por cada 100 fichas apostadas.', rarity: 'rare' },
-            { type: 'high_roller', name: 'Alta Tensión', color: 'purple', desc: 'x4 Mult si apuestas más de 500.', rarity: 'rare' },
-            { type: 'even', name: 'Juez Par', color: 'blue', desc: 'x4 Mult si el número es PAR.', rarity: 'common' },
-            { type: 'lucky_7', name: 'Suerte del 7', color: 'red', desc: 'x10 Mult si sale un 7 (7, 17, 27).', rarity: 'legendary' },
-            { type: 'dozens', name: 'Primera Docena', color: 'blue', desc: 'x3 Mult si sale 1-12.', rarity: 'common' },
-            { type: 'high_payout', name: 'Números de Oro', color: 'orange', desc: 'Los números pagan 50:1 (35).', rarity: 'rare' },
-            { type: 'super_color', name: 'Banda Magna', color: 'blue', desc: 'El color paga 3:1 (1).', rarity: 'common' },
-            { type: 'risky', name: 'La Duda', color: 'black', desc: '50% x4 Ganancia, 50% Pérdida Total.', rarity: 'legendary' },
-            { type: 'ghost', name: 'El Fantasma', color: 'blue', desc: '20% chance de recuperar apuesta al perder.', rarity: 'rare' },
-            { type: 'chest', name: 'El Cofre', color: 'gold', desc: 'Al ganar, obtienes una carta extra aleatoria.', rarity: 'legendary' }
+            { type: 'mult', mult: 2, condition: 'red', name: 'x2 Rojo', color: 'red', desc: 'Ganancias x2 si sale Rojo.' },
+            { type: 'mult', mult: 2, condition: 'black', name: 'x2 Negro', color: 'black', desc: 'Ganancias x2 si sale Negro.' },
+            { type: 'mult', mult: 5, condition: 'any', name: 'x5 Global', color: 'blue', desc: 'Multiplica CUALQUIER victoria x5.' },
+            { type: 'mult', mult: 10, condition: 'zero', name: 'Jackpot 0', color: 'red', desc: 'x10 si sale el 0.' },
+            { type: 'risk', mult: 15, condition: 'devil_coin', name: 'Moneda Diablo', color: 'gold', desc: '50% de x15 o 50% de perder todo.' },
+            { type: 'chaos', mult: 0, condition: 'any', name: 'Dios del Caos', color: 'black', desc: 'Mult aleatorio (0-20) cada giro.' },
+            { type: 'echo', mult: 1, condition: 'any', name: 'Bola Fantasma', color: 'blue', desc: '30% prob de giro gratis si ganas.' },
+            { type: 'refund', mult: 0, condition: 'lose', name: 'Martingala', color: 'red', desc: 'Recupera 50% de apuestas si pierdes.' },
+            { type: 'conversion', mult: 2, condition: 'any', name: 'Alquimia', color: 'gold', desc: 'Si pierdes por color, ganas igual.' }
+        ];
+
+        const slotExclusiveCards = [
+            { type: 'legendary', mult: 100, condition: 'number', name: 'Exodia', color: 'legendary', desc: 'x100 SI aciertas un número exacto.' },
+            { type: 'legendary', mult: 0, condition: 'any', name: 'El Duende', color: 'legendary', desc: 'Fuerza a que salga el 0 (100%).' },
+            { type: 'legendary', mult: 0, condition: 'any', name: 'Duplicador', color: 'legendary', desc: 'Duplica tu balance actual al ganar.' },
+            { type: 'legendary', mult: 0, condition: 'any', name: 'Clon', color: 'legendary', desc: 'Gana +50 fichas por cada carta en mano.' },
+            { type: 'legendary', mult: 0, condition: 'any', name: 'Tiempo', color: 'legendary', desc: 'Añade +500 fichas tras cada giro.' }
         ];
 
         const colors = { red: [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36], black: [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35], green: [0] };
@@ -612,25 +590,10 @@
         const ctx = canvas.getContext('2d');
         const jimboPupil = document.getElementById('jimbo-pupil');
         const jimboEyelid = document.getElementById('jimbo-eyelid');
-        const progressBarFill = document.getElementById('progress-bar-fill');
-        const effectText = document.getElementById('effect-text');
-
-        // --- Sistema de Audio ---
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playChipSound() {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            osc.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05);
-            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.06);
-        }
+        const progressBarFill = document.getElementById('progress-fill');
+        
+        let minerInterval = null;
+        let debtInterval = null;
 
         // --- Inicialización ---
         window.onload = () => {
@@ -640,13 +603,19 @@
             renderShop();
             updateBalanceUI();
             updateRoundUI();
-            initChat();
+            renderPowers();
+            startPassiveEffects();
 
             setTimeout(() => { 
                 if(gameState.isRunMode) {
                     if (gameState.balance >= gameState.roundGoal) autoAdvanceCheckOnLoad();
+                    else showToast(`Bienvenido de nuevo. Ronda ${gameState.currentRound}`, "success");
+                } else {
+                    showToast("Modo Libre Activado", "info");
                 }
             }, 1000);
+            
+            log("Dealer", "¡La mesa está servida! Las cartas se consumen al usar.");
         };
 
         function saveGame() {
@@ -655,102 +624,174 @@
             localStorage.setItem('balatro_isRun', gameState.isRunMode);
             localStorage.setItem('balatro_round', gameState.currentRound);
             localStorage.setItem('balatro_goal', gameState.roundGoal);
+            localStorage.setItem('balatro_seerPrice', gameState.seerPrice); // Guardar precio escalado
         }
 
-        function hardReset() {
-            if(confirm("⚠️ ESTO BORRARÁ TODO TU PROGRESO.\n\n¿Estás seguro de reiniciar el juego por completo?")) {
-                localStorage.clear();
-                location.reload();
+        // --- Efectos Pasivos ---
+        function startPassiveEffects() {
+            // Limpiar intervalos previos para evitar duplicados al recargar
+            if(minerInterval) clearInterval(minerInterval);
+            if(debtInterval) clearInterval(debtInterval);
+
+            if (gameState.inventory.includes('cryptoMiner')) {
+                minerInterval = setInterval(() => {
+                    if(!gameState.isSpinning) {
+                        gameState.balance += 50;
+                        updateBalanceUI();
+                        updateRoundUI();
+                        showToast("+50₳ (Minería)", "info");
+                    }
+                }, 10000);
+            }
+
+            if (gameState.inventory.includes('loanShark')) {
+                debtInterval = setInterval(() => {
+                    if(!gameState.isSpinning && gameState.balance > 0) {
+                        const debt = Math.min(100, gameState.balance);
+                        gameState.balance -= debt;
+                        updateBalanceUI();
+                        updateRoundUI();
+                        showToast(`-100₳ (Deuda)`, "error");
+                        checkGameOver();
+                    }
+                }, 5000);
             }
         }
 
-        function getColor(num) {
-            if (num === 0) return 'green';
-            if (colors.red.includes(num)) return 'red';
-            return 'black';
-        }
-        function getNumberColor(num) {
-             if (num === 0) return '#27ae60';
-             if (colors.red.includes(num)) return '#e74c3c';
-             return '#2c3e50';
+        // --- TRAGAPERRAS ---
+        function toggleSlot() {
+            const modal = document.getElementById('slot-modal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
         }
 
-        function selectChip(val, el) {
-            if (gameState.isSpinning) return;
-            if (val === 'allin') {
-                if (gameState.balance <= 0) { showToast("¡No tienes fichas!", "error"); return; }
+        function playSlotMachine() {
+            if (gameState.activeCards.length === 0) {
+                showToast("¡Necesitas cartas para jugar!", "error");
+                return;
             }
-            gameState.selectedChipValue = val;
-            document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-            el.classList.add('selected');
-        }
+            const btn = document.getElementById('btn-slot-action');
+            btn.disabled = true;
 
-        // --- SISTEMA DE CHAT ---
-        function initChat() {
-            const chatLog = document.getElementById('chat-log');
-            addChatMessage('dealer', '¡Hola! Usa la ficha ALL para jugar todo lo que tienes.');
-            setInterval(() => {
-                if(Math.random() > 0.8 && !gameState.isSpinning) {
-                    const randomMsgs = [
-                        { sender: 'jimbo', text: 'HE DETECTADO UNA ANOMALÍA EN EL SECTOR 7... AH NO, ES SOLO EL DEALER.' },
-                        { sender: 'dealer', text: '¡No me hagas perder el tiempo, robot de lata!' },
-                        { sender: 'jimbo', text: '¿HAS PROBADO LAS TRAGAPERRAS? MI ALGORITMO DICE QUE TIENES UN 0.01% DE GANAR.' },
-                        { sender: 'jimbo', text: 'MI SISTEMA DE COOLING ESTA FALLANDO. ESTOY DEMASIADO EXCITADO POR LAS PROBABILIDADES.' },
-                        { sender: 'dealer', text: '¿Has probado el Imán? Es como hacer trampa... legal.' },
-                        { sender: 'jimbo', text: 'EL NÚMERO 0 ES MI FAVORITO. REPRESENTA EL VACÍO DE MI EXISTENCIA.' },
-                        { sender: 'dealer', text: 'Deja de asustar a los clientes, Jimbo.' },
-                        { sender: 'jimbo', text: 'COMPRANDO CARTAS... PROCESANDO RIESGO... CARGANDO DIVERSIÓN.' }
-                    ];
-                    const msg = randomMsgs[Math.floor(Math.random() * randomMsgs.length)];
-                    addChatMessage(msg.sender, msg.text);
-                }
-            }, 25000);
-        }
-        function addChatMessage(sender, text) {
-            const chatLog = document.getElementById('chat-log');
-            const div = document.createElement('div');
-            let senderName = sender === 'user' ? 'Tú' : (sender === 'dealer' ? 'Dealer' : 'Jimbo');
-            div.className = `chat-msg msg-${sender}`;
-            div.innerHTML = `<span class="sender-name">${senderName}</span>${text}`;
-            chatLog.appendChild(div);
-            chatLog.scrollTop = chatLog.scrollHeight;
-        }
-        function sendMessage() {
-            const input = document.getElementById('chat-input');
-            const text = input.value.trim();
-            if(!text) return;
-            addChatMessage('user', text);
-            input.value = '';
-            processBotResponse(text.toLowerCase());
-        }
-        function handleEnter(e) { if (e.key === 'Enter') sendMessage(); }
-        function processBotResponse(text) {
-            const typingIndicator = document.getElementById('typing-indicator');
-            setTimeout(() => { typingIndicator.style.display = 'block'; }, 500);
-            const delay = 1000 + Math.random() * 1500;
+            const randomIndex = Math.floor(Math.random() * gameState.activeCards.length);
+            const sacrificedCard = gameState.activeCards.splice(randomIndex, 1)[0];
+            renderActiveCards();
+            showToast(`Sacrificaste: ${sacrificedCard.name}`, "warning");
+            log("Sistema", `Tragaperras: sacrificada carta ${sacrificedCard.name}.`);
+
+            const reels = [document.getElementById('reel1'), document.getElementById('reel2'), document.getElementById('reel3')];
+            const symbols = ['🍒', '🍋', '💎', '👹', '🃏'];
+            
+            let interval = setInterval(() => {
+                reels.forEach(r => r.innerText = symbols[Math.floor(Math.random() * symbols.length)]);
+            }, 100);
+
             setTimeout(() => {
-                typingIndicator.style.display = 'none';
-                let response = null;
-                let responder = 'dealer';
-                if (text.includes('reset')) response = "El botón rojo de abajo borra todo.";
-                if (text.includes('all')) response = "La ficha ALL apuesta todo tu saldo. ¡Peligroso!";
-                if (text.includes('jimbo')) { responder = 'jimbo'; response = "NO SOY UN ROBOT. SOY UNA ENTIDAD SUPERIOR."; }
-                if (text.includes('tragaperras')) { responder = 'jimbo'; response = "¡SÍ! SACRIFICA TUS CARTAS INÚTILES POR GLORIA ETERNA."; }
-                if (response) addChatMessage(responder, response);
-            }, delay);
+                clearInterval(interval);
+                const results = [
+                    symbols[Math.floor(Math.random() * symbols.length)],
+                    symbols[Math.floor(Math.random() * symbols.length)],
+                    symbols[Math.floor(Math.random() * symbols.length)]
+                ];
+                if (Math.random() < 0.35) {
+                    const matchSym = symbols[Math.floor(Math.random() * symbols.length)];
+                    results[0] = matchSym; results[1] = matchSym; results[2] = matchSym;
+                }
+                reels[0].innerText = results[0]; reels[1].innerText = results[1]; reels[2].innerText = results[2];
+                checkSlotWin(results);
+                btn.disabled = false;
+            }, 2000);
         }
 
-        // --- Lógica de Rondas ---
+        function checkSlotWin(results) {
+            const [r1, r2, r3] = results;
+            if (r1 === r2 && r2 === r3) {
+                if (r1 === '🍒') { gameState.balance += 500; showToast("¡PREMIO! +500 Fichas", "success"); }
+                else if (r1 === '🍋') { gameState.balance += 1000; showToast("¡GRAN PREMIO! +1000 Fichas", "success"); }
+                else if (r1 === '💎') { gameState.balance += 3000; showToast("¡MEGA DIAMANTE! +3000 Fichas", "success"); }
+                else if (r1 === '👹') {
+                    const powerfulCard = cardPool[Math.floor(Math.random() * cardPool.length)];
+                    gameState.activeCards.push(powerfulCard);
+                    showToast(`¡PREMIO CAÓTICO! Carta: ${powerfulCard.name}`, "success");
+                    log("Tragaperras", "Has ganado una carta poderosa.");
+                } else if (r1 === '🃏') {
+                    const legCard = slotExclusiveCards[Math.floor(Math.random() * slotExclusiveCards.length)];
+                    gameState.activeCards.push(legCard);
+                    showToast("¡LEYENDA DESCUBIERTA!", "success");
+                    log("Tragaperras", "¡Has conseguido una carta LEGENDARIA!");
+                }
+                updateBalanceUI(); updateRoundUI(); renderActiveCards();
+            } else { showToast("Nada esta vez...", "error"); }
+        }
+
+        // --- Poderes ---
+        function renderPowers() {
+            const container = document.getElementById('powers-list');
+            container.innerHTML = '';
+            shopItems.forEach(item => {
+                if (gameState.inventory.includes(item.id) && item.type === 'active') {
+                    const btn = document.createElement('button');
+                    btn.className = 'power-btn';
+                    btn.innerHTML = `<span>👁️</span> ${item.name}`;
+                    btn.onclick = () => useSeerPower();
+                    container.appendChild(btn);
+                }
+            });
+            if (container.innerHTML === '') container.innerHTML = '<span style="color:#555; font-size:0.8rem; font-family:"VT323"">Sin poderes activos...</span>';
+        }
+
+        function useSeerPower() {
+            if (gameState.isSpinning) return;
+
+            const randomIndex = Math.floor(Math.random() * gameState.wheelNumbers.length);
+            gameState.predeterminedResult = gameState.wheelNumbers[randomIndex];
+            const display = document.getElementById('prediction-box');
+            const color = getColor(gameState.predeterminedResult);
+            display.style.opacity = '1';
+            display.innerHTML = `FUTURO: <span style="color:${color === 'red' ? '#e74c3c' : (color === 'black' ? '#333' : '#27ae60')}">${gameState.predeterminedResult}</span>`;
+            
+            log("Vidente", `El destino está escrito: ${gameState.predeterminedResult}`);
+            showToast("El futuro revelado.", "success");
+
+            // CONSUMIR EL PODER
+            gameState.inventory = gameState.inventory.filter(id => id !== 'seerPower');
+            saveGame();
+            
+            renderPowers();
+            renderShop();
+        }
+
+        // --- Rondas ---
         function startRun() {
             if(gameState.isRunMode && !confirm("¿Reiniciar progreso de rondas?")) return;
+            
             gameState.isRunMode = true;
             gameState.currentRound = 1;
             gameState.balance = 1000;
             gameState.activeCards = []; 
             gameState.roundGoal = 1500; 
-            updateBalanceUI(); updateRoundUI(); renderActiveCards(); saveGame();
-            addChatMessage('dealer', "¡Iniciando nuevo reto!");
+            
+            // REINICIAR MEJORAS E INVENTARIO COMPLETAMENTE
+            gameState.inventory = [];
+            gameState.seerPrice = 5000; // Resetear precio del ojo
+            
+            // Limpiar intervalos activos
+            if(minerInterval) clearInterval(minerInterval);
+            if(debtInterval) clearInterval(debtInterval);
+            minerInterval = null;
+            debtInterval = null;
+            
+            updateBalanceUI(); 
+            updateRoundUI(); 
+            renderActiveCards(); 
+            loadInventory(); // Recargar UI para ocultar mejoras desbloqueadas
+            renderShop(); // Recargar tienda con precios originales
+            renderPowers(); // Limpiar botones de poder
+            saveGame();
+            
+            showToast("¡NUEVO RETO INICIADO! (Mejoras reiniciadas)", "success");
+            log("Sistema", "Ronda 1 iniciada. Todas las mejoras han sido eliminadas.");
         }
+
         function updateRoundUI() {
             const modeText = document.querySelector('.mode-status span');
             const uiContainer = document.getElementById('round-progress-ui');
@@ -767,12 +808,17 @@
                 uiContainer.style.display = 'none';
             }
         }
+
         function checkRoundCompletion() {
             if (!gameState.isRunMode) return;
             if (gameState.balance >= gameState.roundGoal) {
-                setTimeout(() => { document.getElementById('levelup-modal').style.display = 'flex'; setJimboEmotion('happy'); }, 1000);
+                setTimeout(() => {
+                    document.getElementById('levelup-modal').style.display = 'flex';
+                    setJimboEmotion('happy');
+                }, 1000);
             }
         }
+
         function autoAdvanceCheckOnLoad() {
             let roundsSkipped = 0;
             while (gameState.balance >= gameState.roundGoal) {
@@ -780,8 +826,12 @@
                 gameState.roundGoal = Math.floor(1500 + Math.pow(gameState.currentRound, 1.5) * 500);
                 roundsSkipped++;
             }
-            if (roundsSkipped > 0) { updateRoundUI(); saveGame(); showToast(`Avanzado ${roundsSkipped} rondas.`, "info"); }
+            if (roundsSkipped > 0) {
+                updateRoundUI(); saveGame();
+                showToast(`Saldo excesivo. Avanzado ${roundsSkipped} rondas.`, "info");
+            } else { showToast(`Bienvenido. Ronda ${gameState.currentRound}`, "success"); }
         }
+
         function nextRound() {
             document.getElementById('levelup-modal').style.display = 'none';
             let roundsSkipped = 0;
@@ -793,211 +843,170 @@
             updateRoundUI(); saveGame();
             if (roundsSkipped > 1) showToast(`¡SALTASTE ${roundsSkipped} RONDAS!`, "success", true);
             else showToast(`RONDA ${gameState.currentRound} INICIADA`, "success");
+            log("Sistema", `Comienza la Ronda ${gameState.currentRound}.`);
         }
+
         function checkGameOver() {
             if (!gameState.isRunMode) return;
             if (gameState.balance <= 0) {
                 if (gameState.inventory.includes('lifeInsurance')) {
                     gameState.balance = 500;
+                    gameState.inventory = gameState.inventory.filter(id => id !== 'lifeInsurance');
                     updateBalanceUI(); updateRoundUI(); saveGame();
                     showToast("¡SEGURO DE VIDA UTILIZADO!", "warning");
-                    addChatMessage('dealer', "Salvado por el seguro.");
+                    log("Sistema", "Has sido salvado por tu seguro (agotado).");
                 } else {
+                    document.getElementById('final-round').innerText = gameState.currentRound;
                     document.getElementById('gameover-modal').style.display = 'flex';
                     setJimboEmotion('sad');
-                    addChatMessage('dealer', "Game Over.");
                 }
             }
         }
-        function resetGame() { document.getElementById('gameover-modal').style.display = 'none'; startRun(); }
 
-        // --- Lógica de Cartas ---
+        function resetGame() {
+            document.getElementById('gameover-modal').style.display = 'none';
+            startRun();
+        }
+
+        // --- Cartas ---
         function buyRandomCard() {
-            if (gameState.balance < 100) { showToast("¡Necesitas 100 fichas!", "error"); return; }
-            gameState.balance -= 100;
+            if (gameState.balance < 150) {
+                showToast("¡Necesitas 150 fichas!", "error");
+                return;
+            }
+            gameState.balance -= 150;
             updateBalanceUI(); updateRoundUI();
             const randomCard = cardPool[Math.floor(Math.random() * cardPool.length)];
             gameState.activeCards.push(randomCard);
             renderActiveCards();
             showToast(`Carta ${randomCard.name} añadida!`, "success");
-        }
-
-        function rerollCards() {
-            const rerollCost = 50;
-            if (gameState.activeCards.length === 0) { showToast("No tienes cartas.", "error"); return; }
-            if (gameState.balance < rerollCost) { showToast(`Necesitas ${rerollCost} fichas.`, "error"); return; }
-            gameState.balance -= rerollCost;
-            updateBalanceUI();
-            const count = gameState.activeCards.length;
-            gameState.activeCards = [];
-            for(let i=0; i<count; i++) {
-                gameState.activeCards.push(cardPool[Math.floor(Math.random() * cardPool.length)]);
-            }
-            renderActiveCards();
-            playChipSound();
-            showToast("¡Mano rebarajada!", "info");
-            addChatMessage('jimbo', 'ESPERO QUE ESA NUEVA MANO NO SEA CASCARAS...');
+            log("Sistema", `Robaste: ${randomCard.name}`);
         }
 
         function renderActiveCards() {
             const container = document.getElementById('active-cards');
             container.innerHTML = '';
-            if (gameState.activeCards.length === 0) { container.innerHTML = '<div style="color:#666; margin:auto; font-size:0.9rem; font-style:italic;">Sin cartas...</div>'; return; }
+            if (gameState.activeCards.length === 0) {
+                container.innerHTML = '<div style="color:#666; margin:auto; font-size:0.9rem; font-style:italic;">Sin cartas... ¡Ve a la tienda!</div>';
+                return;
+            }
             gameState.activeCards.forEach((card, index) => {
                 const div = document.createElement('div');
-                // Clase especial para permanentes
-                let cardClass = `balatro-card ${card.color}`;
-                if (card.permanent) cardClass += " legendary-perm";
-                
-                div.className = cardClass;
-                div.innerHTML = `<div class="mult">${card.name}</div><div class="card-desc">${card.desc}</div>${card.permanent ? '' : `<div class="remove-card" onclick="removeCard(${index})">×</div>`}`;
+                div.className = `balatro-card ${card.color}`;
+                const multDisplay = card.mult > 0 ? `x${card.mult}` : '??';
+                div.innerHTML = `
+                    <div class="remove-card" onclick="removeCard(${index})">×</div>
+                    <div class="card-title">${card.name}</div>
+                    <div class="card-mult">${multDisplay}</div>
+                    <div class="card-effect">${card.desc}</div>
+                `;
                 container.appendChild(div);
             });
         }
+
         function removeCard(index) { gameState.activeCards.splice(index, 1); renderActiveCards(); }
         function clearCards() { gameState.activeCards = []; renderActiveCards(); }
 
         // --- Tienda ---
-        function toggleShop() { const modal = document.getElementById('shop-modal'); modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex'; }
+        function toggleShop() {
+            const modal = document.getElementById('shop-modal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        }
         function renderShop() {
             const container = document.getElementById('shop-container');
             container.innerHTML = '';
             shopItems.forEach(item => {
                 const isOwned = gameState.inventory.includes(item.id);
                 const div = document.createElement('div');
-                div.className = `shop-item ${isOwned ? 'purchased' : ''}`;
-                div.innerHTML = `<div style="font-weight:bold; color:#fff;">${item.name}</div><div style="font-size:0.8rem; color:#aaa; margin:5px 0;">${item.desc}</div>${isOwned ? '<div style="color:#2ecc71;">POSEÍDO</div>' : `<div class="item-price">${item.price}₳</div><button class="btn-buy" onclick="buyItem('${item.id}')">COMPRAR</button>`}`;
+                div.className = `shop-item ${isOwned ? 'purchased' : ''} ${item.type.includes('passive') ? 'passive' : ''} ${item.type === 'active' ? 'active' : ''}`;
+                
+                let btnHtml = '';
+                let displayPrice = item.price;
+
+                // Lógica de Precio Dinámico para el Ojo
+                if (item.id === 'seerPower') {
+                    displayPrice = gameState.seerPrice;
+                }
+
+                if (item.id === 'seerPower') {
+                    if (isOwned) {
+                        btnHtml = '<div style="color:#2ecc71;">LISTO PARA USAR</div>'; 
+                    } else {
+                        btnHtml = `<div class="item-price">${displayPrice}₳</div><button class="btn-buy" onclick="buyItem('${item.id}')">COMPRAR</button>`;
+                    }
+                } else {
+                    // Comportamiento normal para otros items
+                    if (isOwned) {
+                        if (item.type === 'unlock' || item.type === 'passive' || item.type === 'cosmetic') {
+                            btnHtml = '<div style="color:#2ecc71;">POSEÍDO</div>';
+                        } else {
+                             btnHtml = '<div style="color:#2ecc71;">LISTO PARA USAR</div>';
+                        }
+                    } else {
+                         btnHtml = `<div class="item-price">${displayPrice}₳</div><button class="btn-buy" onclick="buyItem('${item.id}')">COMPRAR</button>`;
+                    }
+                }
+                
+                if(item.price === 0 && !isOwned) btnHtml = `<div class="item-price" style="color:#e74c3c">¡GRATIS!</div><button class="btn-buy" onclick="buyItem('${item.id}')">ACEPTAR</button>`;
+
+                div.innerHTML = `<div style="font-weight:bold; color:#fff;">${item.name}</div><div style="font-size:0.8rem; color:#aaa; margin:5px 0;">${item.desc}</div>${btnHtml}`;
                 container.appendChild(div);
             });
         }
         function buyItem(id) {
             const item = shopItems.find(i => i.id === id);
-            if (gameState.balance >= item.price) {
-                gameState.balance -= item.price;
+            
+            // Verificar precio dinámico
+            let finalPrice = item.price;
+            if (id === 'seerPower') {
+                finalPrice = gameState.seerPrice;
+            }
+
+            if (gameState.balance >= finalPrice) {
+                gameState.balance -= finalPrice;
                 gameState.inventory.push(id);
-                updateBalanceUI(); updateRoundUI(); saveGame(); renderShop(); loadInventory();
+
+                // Si es el Ojo, aumentar precio exorbitantemente (x3)
+                if (id === 'seerPower') {
+                    gameState.seerPrice = Math.floor(gameState.seerPrice * 3);
+                    showToast("Precio del Ojo aumentado...", "info");
+                }
+
+                updateBalanceUI(); updateRoundUI(); saveGame(); renderShop(); loadInventory(); renderPowers(); startPassiveEffects();
                 showToast(`Compraste ${item.name}`, "success");
             } else { showToast("Saldo insuficiente", "error"); }
         }
 
-        // --- Lógica SLOTS (Tragaperras) ---
-        const slotSymbols = ['🍒', '🍋', '🍇', '💎', '👑', '🤖'];
-        
-        function toggleSlots() { 
-            const modal = document.getElementById('slots-modal'); 
-            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-            document.getElementById('slot-result-text').innerText = "";
-            document.getElementById('slots-status').innerText = "";
-        }
-
-        function spinSlots() {
-            if (gameState.activeCards.length === 0) {
-                document.getElementById('slots-status').innerText = "¡NECESITAS UNA CARTA PARA SACRIFICAR!";
-                return;
-            }
-            if (gameState.activeCards.every(c => c.permanent)) {
-                document.getElementById('slots-status').innerText = "¡SOLO PUEDES SACRIFICAR CARTAS NORMALES!";
-                return;
-            }
-
-            // Sacrificar carta normal (prioridad a las últimas añadidas)
-            let sacrificeIndex = -1;
-            for (let i = gameState.activeCards.length - 1; i >= 0; i--) {
-                if (!gameState.activeCards[i].permanent) {
-                    sacrificeIndex = i;
-                    break;
-                }
-            }
-
-            if (sacrificeIndex === -1) return; // Seguridad extra
-
-            gameState.activeCards.splice(sacrificeIndex, 1);
-            renderActiveCards();
-            
-            // Animación de slots
-            const reels = [document.getElementById('reel-1'), document.getElementById('reel-2'), document.getElementById('reel-3')];
-            let results = [];
-            
-            // Girar
-            reels.forEach((reel, index) => {
-                let spins = 0;
-                let maxSpins = 10 + (index * 5);
-                const interval = setInterval(() => {
-                    const randomSym = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
-                    reel.innerHTML = `<div style="font-size: 3rem;">${randomSym}</div>`;
-                    spins++;
-                    if (spins >= maxSpins) {
-                        clearInterval(interval);
-                        const finalSym = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
-                        reel.innerHTML = `<div style="font-size: 3rem; animation: shake 0.5s;">${finalSym}</div>`;
-                        results[index] = finalSym;
-                        if (index === 2) checkSlotWin(results);
-                    }
-                }, 100);
-            });
-            document.getElementById('slots-status').innerText = "GIRANDO...";
-            document.getElementById('slot-result-text').innerText = "";
-        }
-
-        function checkSlotWin(results) {
-            document.getElementById('slots-status').innerText = "";
-            const text = document.getElementById('slot-result-text');
-            
-            // Lógica de premios
-            if (results[0] === results[1] && results[1] === results[2]) {
-                const symbol = results[0];
-                if (symbol === '🤖') {
-                    // Jackpot
-                    text.innerText = "¡JACKPOT! +10,000 FICHAS + CARTA EXCLUSIVA";
-                    gameState.balance += 10000;
-                    gameState.activeCards.push(exclusiveCards[1]); // El Bot
-                } else if (symbol === '👑') {
-                    // Legendaria
-                    text.innerText = "¡PREMIO! +5,000 FICHAS + CARTA LEGENDARIA";
-                    gameState.balance += 5000;
-                    gameState.activeCards.push(exclusiveCards[0]); // El Emperador
-                } else if (symbol === '💎') {
-                    text.innerText = "¡DIAMANTES! +1000 FICHAS + CARTA ALEATORIA";
-                    gameState.balance += 1000;
-                    gameState.activeCards.push(cardPool[Math.floor(Math.random() * cardPool.length)]);
-                } else if (symbol === '🍇') {
-                    text.innerText = "¡GRAN PREMIO! +500 FICHAS";
-                    gameState.balance += 500;
-                } else if (symbol === '🍋') {
-                    text.innerText = "¡PREMIO! +300 FICHAS";
-                    gameState.balance += 300;
-                } else {
-                    text.innerText = "¡PEQUEÑA! +200 FICHAS";
-                    gameState.balance += 200;
-                }
-            } else {
-                text.innerText = "NADA...";
-            }
-            updateBalanceUI();
-            renderActiveCards();
-            playChipSound();
-        }
-
-        // --- Core del Juego ---
+        // --- CORE JUEGO ---
         function initBoard() {
             const grid = document.getElementById('numbers-grid');
+            while(grid.children.length > 1) { grid.removeChild(grid.lastChild); }
             for (let i = 1; i <= 36; i++) {
                 const cell = document.createElement('div');
                 cell.className = `bet-cell ${getColor(i) === 'red' ? 'red' : 'black'}`;
-                cell.id = `num-${i}`;
                 cell.innerText = i;
                 cell.onclick = () => placeBet('number', i);
                 grid.appendChild(cell);
             }
         }
 
+        function selectChip(val, el) {
+            if (gameState.isSpinning) return;
+            gameState.selectedChipValue = val;
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
         function placeBet(type, value) {
             if (gameState.isSpinning) return;
-            let betAmount = gameState.selectedChipValue;
-            if (betAmount === 'allin') betAmount = gameState.balance;
-            if (betAmount <= 0) return;
-            if (gameState.balance < betAmount) return;
             
+            let betAmount = gameState.selectedChipValue;
+            if (betAmount === 'all_in') {
+                betAmount = gameState.balance;
+            }
+
+            if (gameState.balance < betAmount) return;
+
             gameState.balance -= betAmount;
             updateBalanceUI(); updateRoundUI();
 
@@ -1005,18 +1014,17 @@
             if (!gameState.currentBets[key]) gameState.currentBets[key] = { type, value, amount: 0 };
             gameState.currentBets[key].amount += betAmount;
 
-            const target = type === 'number' ? 
-                (value === 0 ? document.querySelector('.bet-cell.green') : document.getElementById(`num-${value}`)) :
-                (value === 'red' ? document.querySelector('.btn-red') : document.querySelector('.btn-black'));
-
+            let target;
+            if (type === 'number') target = (value === 0) ? document.querySelector('.bet-cell.green') : [...document.querySelectorAll('.bet-cell')].find(el => el.innerText == value);
+            else target = (value === 'red') ? document.querySelector('.btn-red') : document.querySelector('.btn-black');
+            
             const existing = target.querySelector('.chip-marker');
             if(existing) existing.remove();
-
+            
             const chip = document.createElement('div');
-            chip.className = 'chip-marker new-chip';
+            chip.className = 'chip-marker';
             chip.innerText = gameState.currentBets[key].amount;
             target.appendChild(chip);
-            playChipSound();
         }
 
         function drawWheel() {
@@ -1037,18 +1045,10 @@
 
         function spinWheel() {
             if (gameState.isSpinning || Object.keys(gameState.currentBets).length === 0) return;
-            
-            // Bot Bonus Logic
-            const hasBot = gameState.activeCards.find(c => c.type === 'perm_bot');
-            if (hasBot) {
-                gameState.balance += 200;
-                showToast("EL BOT: +200 FICHAS", "warning");
-            }
-
+            document.getElementById('prediction-box').style.opacity = '0';
             gameState.isSpinning = true;
             document.getElementById('spin-btn').disabled = true;
             document.getElementById('display-result').innerText = "?";
-            effectText.style.opacity = 0;
             gameState.speed = 0.4 + Math.random()*0.2;
             animate();
             setJimboEmotion('neutral');
@@ -1065,171 +1065,158 @@
             }
         }
 
+        // --- LÓGICA DE CONSUMO Y RESULTADOS ---
+        function consumeCards() {
+            const cardEls = document.querySelectorAll('.balatro-card');
+            cardEls.forEach(el => el.classList.add('fading-out'));
+
+            setTimeout(() => {
+                gameState.activeCards = [];
+                renderActiveCards();
+            }, 800);
+        }
+
         function calculateResult() {
             gameState.isSpinning = false;
             document.getElementById('spin-btn').disabled = false;
 
-            const arc = (2*Math.PI)/gameState.wheelNumbers.length;
-            let angle = 1.5*Math.PI - gameState.rotation;
-            while (angle < 0) angle += 2*Math.PI; while (angle >= 2*Math.PI) angle -= 2*Math.PI;
-            
-            let winningNum = gameState.wheelNumbers[Math.floor(angle/arc)];
-            let originalNum = winningNum;
+            let winningNum;
+            if (gameState.predeterminedResult !== null) {
+                winningNum = gameState.predeterminedResult;
+                gameState.predeterminedResult = null;
+            } else {
+                const arc = (2*Math.PI)/gameState.wheelNumbers.length;
+                let angle = 1.5*Math.PI - gameState.rotation;
+                while (angle < 0) angle += 2*Math.PI; while (angle >= 2*Math.PI) angle -= 2*Math.PI;
+                winningNum = gameState.wheelNumbers[Math.floor(angle/arc)];
+            }
             let winColor = getColor(winningNum);
 
-            // --- Check Permanent Emperor ---
-            const hasEmperor = gameState.activeCards.find(c => c.type === 'perm_emp');
-            let permanentGlobalMult = hasEmperor ? 3 : 1;
-
-            const hasNoZero = gameState.activeCards.some(c => c.type === 'no_zero');
-            if (hasNoZero && winningNum === 0) {
-                winningNum = 1; winColor = 'red';
-            }
-
-            let forcedColor = null;
-            if (gameState.activeCards.some(c => c.type === 'force_red')) forcedColor = 'red';
-            if (gameState.activeCards.some(c => c.type === 'force_black')) forcedColor = 'black';
-
-            if (forcedColor && winColor !== forcedColor) {
-                const resultDisplay = document.getElementById('display-result');
-                resultDisplay.style.animation = 'shake 0.5s';
-                setTimeout(() => resultDisplay.style.animation = '', 500);
-                const arr = forcedColor === 'red' ? colors.red : colors.black;
-                winningNum = arr[Math.floor(Math.random() * arr.length)];
-                winColor = forcedColor;
-                effectText.innerText = `IMÁN ${forcedColor.toUpperCase()} ACTIVO`;
-                effectText.style.color = forcedColor === 'red' ? '#e74c3c' : '#2c3e50';
-                effectText.style.opacity = 1;
-            }
+            gameState.activeCards.forEach(card => {
+                if(card.name === 'El Duende') {
+                    winningNum = 0;
+                    winColor = 'green';
+                    showToast("¡El Duende fuerza el 0!", "warning");
+                    document.getElementById('display-result').innerText = 0;
+                    document.getElementById('display-result').style.color = "#27ae60";
+                }
+                if(card.name === 'Tiempo') {
+                    gameState.balance += 500;
+                    showToast("¡Tiempo: +500 Fichas!", "info");
+                }
+            });
 
             document.getElementById('display-result').innerText = winningNum;
             document.getElementById('display-result').style.color = winColor === 'red' ? '#e74c3c' : (winColor === 'black' ? '#333' : '#27ae60');
 
-            let totalWin = 0;
-            let totalBetSum = 0;
-            let usedCards = [];
-            let colorMult = 1;
-            let numberPayout = 35;
-            let globalMult = 1;
-
-            Object.values(gameState.currentBets).forEach(bet => {
-                totalBetSum += bet.amount;
-            });
+            let baseWin = 0;
+            let wonExactNumber = false;
+            let alquimiaActive = false;
 
             gameState.activeCards.forEach(card => {
-                let active = false;
-                // Permanentes no se marcan como usadas aquí
-                if (card.permanent) return; 
-
-                if (card.type === 'mult') {
-                    if (card.condition === 'any') active = true;
-                    else if (card.condition === 'red' && winColor === 'red') active = true;
-                    else if (card.condition === 'black' && winColor === 'black') active = true;
-                    if (active) { globalMult *= card.mult; usedCards.push(card.name); }
-                }
-                if (card.type === 'buffalo' && totalWin > 0) {
-                    const bonus = Math.floor(totalBetSum / 100);
-                    if (bonus >= 1) { globalMult *= bonus; usedCards.push(card.name); showToast(`BÚFALO: +x${bonus}!`, "info"); }
-                }
-                if (card.type === 'high_roller' && totalWin > 0 && totalBetSum >= 500) { globalMult *= 4; usedCards.push(card.name); }
-                if (card.type === 'even' && totalWin > 0 && (winningNum !== 0 && winningNum % 2 === 0)) { globalMult *= 4; usedCards.push(card.name); }
-                if (card.type === 'lucky_7' && totalWin > 0 && winningNum.toString().includes('7')) { globalMult *= 10; usedCards.push(card.name); showToast("¡SIE7E!", "success"); }
-                if (card.type === 'dozens' && totalWin > 0 && winningNum >= 1 && winningNum <= 12) { globalMult *= 3; usedCards.push(card.name); }
-                if (card.type === 'super_color' && (winColor === 'red' || winColor === 'black')) { colorMult = 3; usedCards.push(card.name); }
-                if (card.type === 'high_payout' && winColor !== 'green') { numberPayout = 50; usedCards.push(card.name); }
+                if(card.name === 'Alquimia') alquimiaActive = true;
             });
-
-            // Aplicar multiplicador permanente
-            globalMult *= permanentGlobalMult;
 
             Object.values(gameState.currentBets).forEach(bet => {
                 let won = false, mult = 0;
-                if (bet.type === 'number' && bet.value === winningNum) { won = true; mult = numberPayout; }
-                else if (bet.type === 'color' && bet.value === winColor) { won = true; mult = colorMult; }
-                if (won) totalWin += (bet.amount * mult * globalMult);
+                if (bet.type === 'number' && bet.value === winningNum) { won = true; mult = 35; wonExactNumber = true; }
+                else if (bet.type === 'color' && bet.value === winColor) { won = true; mult = 1; }
+                
+                if (!won && alquimiaActive && bet.type === 'color' && bet.value !== winColor && winColor !== 'green') {
+                    won = true; mult = 1;
+                    showToast("¡Alquimia convierte la pérdida!", "info");
+                }
+
+                if (won) baseWin += (bet.amount * mult);
             });
 
-            const hasInsurance = gameState.activeCards.some(c => c.type === 'insurance');
-            const hasGhost = gameState.activeCards.some(c => c.type === 'ghost');
+            let totalMult = 1;
             
-            if (totalWin > 0) {
-                gameState.balance += totalWin;
+            gameState.activeCards.forEach(card => {
+                let active = false;
                 
-                const hasInterest = gameState.activeCards.find(c => c.type === 'interest');
-                if (hasInterest) {
-                    const interestAmount = Math.floor(gameState.balance * 0.10);
-                    if (interestAmount > 0) { gameState.balance += interestAmount; showToast(`INTERÉS: +${interestAmount}`, "warning"); usedCards.push('Interés Compuesto'); }
+                if (card.name === 'Exodia' && wonExactNumber) {
+                    totalMult *= card.mult;
+                    showToast("EXODIA: x100!!!", "success");
+                    active = true;
                 }
-                const hasChest = gameState.activeCards.find(c => c.type === 'chest');
-                if (hasChest) {
-                    const newCard = cardPool[Math.floor(Math.random() * cardPool.length)];
-                    gameState.activeCards.push(newCard);
-                    showToast(`COFRE: Ganaste ${newCard.name}`, "success");
-                    usedCards.push('El Cofre');
-                    setTimeout(() => renderActiveCards(), 1500); 
+                else if (card.condition === 'any' && baseWin > 0) active = true;
+                else if (card.condition === 'red' && winColor === 'red' && baseWin > 0) active = true;
+                else if (card.condition === 'black' && winColor === 'black' && baseWin > 0) active = true;
+                else if (card.condition === 'zero' && winningNum === 0 && baseWin > 0) active = true;
+                else if (card.condition === 'lose' && baseWin === 0) active = true;
+                else if (card.condition === 'devil_coin') active = true;
+                else if (card.type === 'chaos' && baseWin > 0) {
+                     const chaosMult = Math.floor(Math.random() * 21);
+                     totalMult *= chaosMult;
+                     showToast(`CAOS: x${chaosMult}`, "info");
                 }
 
-                updateBalanceUI(); updateRoundUI();
-                setJimboEmotion('happy');
-                showToast(`¡GANASTE ${Math.floor(totalWin)}!`, "success");
-                // Filtrar: No borrar permanentes ni items usados que no sean permanentes
-                gameState.activeCards = gameState.activeCards.filter(c => !usedCards.includes(c.name) && c.type !== 'insurance' && !c.permanent);
-                renderActiveCards();
-                checkRoundCompletion();
-            } else {
-                const hasDoubt = gameState.activeCards.some(c => c.type === 'risky');
-                if (hasDoubt) {
-                    const roll = Math.random();
-                    if (roll > 0.5) {
-                        totalWin = totalBetSum * 4;
-                        gameState.balance += totalWin;
-                        updateBalanceUI(); updateRoundUI();
-                        setJimboEmotion('neutral');
-                        effectText.innerText = "¡LA DUDA FAVORECIO!";
-                        effectText.style.color = "#e67e22"; effectText.style.opacity = 1;
-                        gameState.activeCards = gameState.activeCards.filter(c => c.type !== 'risky' && !c.permanent);
-                        renderActiveCards();
-                        saveGame();
-                        setTimeout(() => { document.querySelectorAll('.chip-marker').forEach(e => e.remove()); gameState.currentBets = {}; }, 3000);
-                        return;
-                    } else {
-                        totalWin = 0;
-                        effectText.innerText = "LA DUDA TE ENGAÑÓ"; effectText.style.color = "#c0392b"; effectText.style.opacity = 1;
-                        gameState.activeCards = gameState.activeCards.filter(c => c.type !== 'risky' && !c.permanent);
-                        renderActiveCards();
+                if (active && card.type !== 'chaos') {
+                    if (card.type === 'risk') {
+                         if (Math.random() > 0.5) { totalMult *= card.mult; showToast("¡Diablo favorece! x15", "success"); }
+                         else { showToast("¡El Diablo se lleva todo!", "error"); baseWin = -999999; }
+                    } else if (card.type !== 'refund') {
+                        totalMult *= card.mult;
                     }
                 }
-                if (hasGhost && Math.random() < 0.2) {
-                    totalWin = totalBetSum;
-                    gameState.balance += totalWin;
-                    updateBalanceUI(); updateRoundUI();
-                    setJimboEmotion('neutral');
-                    effectText.innerText = "¡EL FANTASMA TE SALVÓ!";
-                    effectText.style.color = "#00d2ff"; effectText.style.opacity = 1;
-                    showToast("¡FANTASMA ACTIVADO!", "warning");
-                    gameState.activeCards = gameState.activeCards.filter(c => c.type !== 'ghost' && !c.permanent);
-                    renderActiveCards();
-                } else if (hasInsurance) {
-                    totalWin = totalBetSum;
-                    gameState.balance += totalWin;
-                    updateBalanceUI(); updateRoundUI();
-                    setJimboEmotion('neutral');
-                    effectText.innerText = "SEGURO ACTIVADO";
-                    effectText.style.color = "#f39c12"; effectText.style.opacity = 1;
-                    showToast(`¡SEGURO DEVUELTO!`, "warning");
-                    gameState.activeCards = gameState.activeCards.filter(c => c.type !== 'insurance' && !c.permanent);
-                    renderActiveCards();
-                } else {
-                    setJimboEmotion('sad');
-                    showToast("Perdiste...", "error");
-                    checkGameOver();
+            });
+
+            if (baseWin > 0) baseWin *= totalMult;
+            if (baseWin < -1000) baseWin = 0;
+
+            let triggerEcho = false;
+
+            if (baseWin > 0) {
+                gameState.activeCards.forEach(card => {
+                    if (card.name === 'Duplicador') {
+                        gameState.balance += gameState.balance;
+                        showToast("¡Duplicador de Balance!", "warning");
+                    }
+                    if (card.name === 'Clon') {
+                        gameState.balance += (gameState.activeCards.length * 50);
+                        showToast(`Clon: +${gameState.activeCards.length * 50} Fichas`, "info");
+                    }
+                    if (card.name === 'Bola Fantasma' && Math.random() < 0.30) {
+                        triggerEcho = true;
+                    }
+                });
+
+                gameState.balance += baseWin;
+                setJimboEmotion('happy');
+                showToast(`¡GANASTE ${Math.floor(baseWin)}! (x${totalMult})`, "success");
+                checkRoundCompletion();
+
+                if (triggerEcho) {
+                    setTimeout(() => {
+                        showToast("¡BOLA FANTASMA: TIRADA GRATIS!", "info");
+                        spinWheel();
+                    }, 2000);
                 }
+
+            } else {
+                setJimboEmotion('sad');
+                let martingalaRefund = 0;
+                gameState.activeCards.forEach((card) => {
+                    if(card.type === 'refund') Object.values(gameState.currentBets).forEach(bet => martingalaRefund += Math.floor(bet.amount * 0.5));
+                });
+                if(martingalaRefund > 0) {
+                    gameState.balance += martingalaRefund;
+                    showToast(`Martingala: Recuperado ${martingalaRefund}`, "warning");
+                } else {
+                    showToast("Perdiste...", "error");
+                }
+                checkGameOver();
             }
+
+            updateBalanceUI(); updateRoundUI();
+            consumeCards();
 
             setTimeout(() => {
                 document.querySelectorAll('.chip-marker').forEach(e => e.remove());
                 gameState.currentBets = {};
             }, 3000);
+            
             saveGame();
         }
 
@@ -1241,37 +1228,48 @@
             else if (state === 'sad') { pupil.setAttribute('cy', '60'); lid.setAttribute('d', 'M 38 65 Q 50 70 62 65'); lid.setAttribute('opacity', '1'); }
             else { pupil.setAttribute('cy', '55'); lid.setAttribute('d', ''); }
         }
-
-        function updateBalanceUI() {
-            document.getElementById('user-balance').innerText = gameState.balance.toLocaleString();
+        function updateBalanceUI() { document.getElementById('user-balance').innerText = gameState.balance; }
+        function getNumberColor(n) {
+            if (colors.red.includes(n)) return "#e74c3c";
+            if (colors.black.includes(n)) return "#2c3e50";
+            return "#27ae60";
         }
-
-        function loadInventory() {
-            if (gameState.inventory.includes('vipSkin')) document.body.classList.add('skin-vip');
-            if (gameState.inventory.includes('neonSkin')) document.body.classList.add('skin-neon');
-            const chip1k = document.getElementById('chip-1000');
-            const chip10k = document.getElementById('chip-10000');
-            const chip100k = document.getElementById('chip-100k');
-            if (gameState.inventory.includes('goldChip') && chip1k) chip1k.style.display = 'flex';
-            if (gameState.inventory.includes('holoChip') && chip10k) chip10k.style.display = 'flex';
-            if (gameState.inventory.includes('titanChip') && chip100k) chip100k.style.display = 'flex';
+        function getColor(n) {
+            if (colors.red.includes(n)) return 'red';
+            if (colors.black.includes(n)) return 'black';
+            return 'green';
         }
-
-        function showToast(text, type = "info", persist = false) {
+        function log(user, msg) {
+            const logBox = document.getElementById('game-log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            let cls = '';
+            if (user.includes('Dealer')) cls = 'log-dealer';
+            if (user.includes('Sistema')) cls = 'log-jimbo';
+            if (user.includes('Vidente')) cls = 'log-system';
+            if (user.includes('Tragaperras')) cls = 'log-slot';
+            entry.innerHTML = `<span class="${cls}">${user}:</span> ${msg}`;
+            logBox.prepend(entry);
+        }
+        function showToast(msg, type) {
             const area = document.getElementById('notification-area');
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerText = text;
-            if (type === 'error') toast.style.borderLeftColor = '#e74c3c';
-            if (type === 'success') toast.style.borderLeftColor = '#2ecc71';
-            if (type === 'warning') toast.style.borderLeftColor = '#f39c12';
-            area.appendChild(toast);
-            if (!persist) {
-                setTimeout(() => {
-                    toast.style.opacity = '0';
-                    setTimeout(() => toast.remove(), 300);
-                }, 3000);
-            }
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.style.borderLeftColor = type === 'error' ? '#e74c3c' : (type === 'success' ? '#2ecc71' : (type === 'warning' ? '#f1c40f' : '#000'));
+            t.innerText = msg;
+            area.appendChild(t);
+            setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 4000);
+        }
+        function loadInventory() {
+            // Primero, ocultar todo por defecto
+            document.getElementById('chip-1000').style.display = 'none';
+            document.body.classList.remove('skin-vip');
+            
+            gameState.inventory.forEach(id => {
+                const item = shopItems.find(i => i.id === id);
+                if (item && item.type === 'unlock') document.getElementById(item.target).style.display = 'flex';
+                if (item && item.type === 'cosmetic') document.body.classList.add(item.target);
+            });
         }
     </script>
 </body>
